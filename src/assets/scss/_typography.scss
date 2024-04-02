@@ -20,11 +20,11 @@ $desired-unit: '%';
         @for $i from 1 through abs($steps) {
             // Determine if this is ascending or descending the type scale.
             @if $steps + 1 > 0 {
-                $font-size: $font-size * $type-scale;
+                $font-size: calc($font-size * $type-scale);
             }
 
  @else {
-                $font-size: $font-size / $type-scale;
+                $font-size: calc($font-size / $type-scale);
             }
         }
     }

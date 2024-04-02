@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -rf ../../../../public/sandbox && mkdir ../../../../public/sandbox && cp -a dist/symbiose/* ../../../../public/sandbox/
+rm ../web.app; rm ../manifest.json; rm ../version; cp web.app ../web.app; cp manifest.json ../manifest.json; cp version ../version
