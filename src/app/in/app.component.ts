@@ -27,8 +27,9 @@ export class AppComponent implements OnInit {
     constructor(
         private api: ApiService,
         private route: ActivatedRoute,
-        private learnService: LearnService
-    ) {}
+        private learnService: LearnService,
+    ) {
+    }
 
     public ngOnInit(): void {
         if (window.innerWidth < 1024) {
@@ -41,8 +42,8 @@ export class AppComponent implements OnInit {
     }
 
     private async load(): Promise<void> {
-        this.environnementInfo = await this.api.get('appinfo');
-        this.appInfo = await this.api.get('assets/env/config.json');
+        this.environnementInfo = await this.api.get('appinfo/learn/learning');
+        this.appInfo = await this.api.get('envinfo');
 
         await this.learnService.loadRessources();
         this.userStatement = this.learnService.getUserStatement();

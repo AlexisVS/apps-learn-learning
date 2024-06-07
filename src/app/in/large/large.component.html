@@ -24,11 +24,12 @@
         </div>
         <mat-tab-group *ngIf="hasAccessToCourse">
             <mat-tab label="Content">
-                <app-content></app-content>
-                <p *ngFor="let i of [5, 4, 3, 2, 1, 0, -1, -2, -3]" [class]="'font-size-' + i">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores aspernatur, assumenda culpa
-                    cumque delectus doloribus.
-                </p>
+                <app-content
+                    [appInfo]="appInfo"
+                    [course]="course"
+                    [currentChapterProgressionIndex]="currentChapterProgressionIndex"
+                    [currentModuleProgressionIndex]="currentChapterProgressionIndex"
+                ></app-content>
             </mat-tab>
             <mat-tab label="Presentation">
                 <app-presentation></app-presentation>

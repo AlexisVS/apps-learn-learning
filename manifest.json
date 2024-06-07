@@ -2,8 +2,8 @@
     "name": "learning",
     "description": "",
     "url": "/learning",
-    "icon": "",
-    "color": "#ff0000",
+    "icon": "school",
+    "color": "#AA3EC6",
     "access": {
         "groups": [
             "admins",
