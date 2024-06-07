@@ -1,4 +1,12 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, UserStatement } from '../../_types/learn';
 
@@ -9,7 +17,7 @@ type DrawerState = 'inactive' | 'active' | 'pinned';
     templateUrl: './large.component.html',
     styleUrls: ['./large.component.scss'],
 })
-export class LargeComponent {
+export class LargeComponent implements AfterViewInit {
     @ViewChild('drawer', { static: true }) drawer: ElementRef<HTMLDivElement>;
     @ViewChild('sideBarMenuButton') sideBarMenuButton: MatButton;
 
@@ -23,6 +31,8 @@ export class LargeComponent {
     @Input() public currentChapterProgressionIndex: number;
 
     @Output() public moduleToLoad: EventEmitter<number> = new EventEmitter<number>();
+
+    public contentTabHeight: number;
 
     public drawerState: DrawerState = 'inactive';
     public menuIcon: string = 'menu';
@@ -40,6 +50,12 @@ export class LargeComponent {
                 }
             }
         });
+    }
+
+    ngAfterViewInit(): void {
+        const height = document.getElementById('matTabContent');
+        console.log(`The height of the div is`);
+        console.log(`${height}`);
     }
 
     public onSideBarButtonClick(): void {

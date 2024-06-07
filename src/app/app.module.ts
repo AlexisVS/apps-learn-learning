@@ -65,5 +65,4 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
     ],
     bootstrap: [AppRootComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

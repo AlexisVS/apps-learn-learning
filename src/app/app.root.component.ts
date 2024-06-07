@@ -16,10 +16,9 @@ export class AppRootComponent implements OnInit {
         private router: Router,
         // private context: ContextService,
         private api: ApiService,
-        private auth: AuthService,
+        private auth: AuthService
         // private env: EnvService,
-    ) {
-    }
+    ) {}
 
     public async ngOnInit(): Promise<void> {
         try {
