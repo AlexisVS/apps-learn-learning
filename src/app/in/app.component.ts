@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Chapter, Course, Module, UserStatement } from '../_types/learn';
+// @ts-ignore
 import { ApiService } from 'sb-shared-lib';
 import { ActivatedRoute } from '@angular/router';
 import { LearnService } from '../_services/Learn.service';
