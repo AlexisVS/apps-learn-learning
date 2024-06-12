@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, UserStatement } from '../../_types/learn';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { MatIcon } from '@angular/material/icon';
 
 type DrawerState = 'inactive' | 'active' | 'pinned';
 
@@ -40,6 +42,7 @@ export class LargeComponent implements AfterViewInit {
 
     constructor() {
         window.addEventListener('click', (event: MouseEvent): void => {
+            console.log('click', event, this.drawerState);
             if (
                 this.drawerState === 'active' &&
                 !this.sideBarMenuButton._elementRef.nativeElement.contains(event.target as Node)
@@ -48,6 +51,15 @@ export class LargeComponent implements AfterViewInit {
                     this.drawerState = 'inactive';
                     this.menuIcon = 'menu';
                 }
+            }
+        });
+
+        window.addEventListener('message', (event: MessageEvent) => {
+            console.log('message event', event);
+
+            if (this.drawerState === 'active') {
+                this.drawerState = 'inactive';
+                this.menuIcon = 'menu';
             }
         });
     }

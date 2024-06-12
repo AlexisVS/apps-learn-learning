@@ -70,7 +70,13 @@ export class AppComponent implements OnInit {
             const courseTitleHyphenated: string = title.replace(/ /g, '-');
 
             document.title = `Learn - ${title}`;
-            window.history.replaceState({}, '', `/${courseTitleHyphenated}`);
+            window.history.replaceState({}, '', `/learning/#/${courseTitleHyphenated}`);
+
+            window.addEventListener('beforeunload', (event: BeforeUnloadEvent): void => {
+                event.preventDefault();
+
+                window.history.replaceState({}, '', `/learning/#/${title}`);
+            });
         }
     }
 
