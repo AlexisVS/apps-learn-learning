@@ -4,6 +4,7 @@ import { AppComponent } from './in/app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+// @ts-ignore
 import { SharedLibModule, CustomDateAdapter } from 'sb-shared-lib';
 import { MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -65,4 +66,5 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
     ],
     bootstrap: [AppRootComponent],
 })
-export class AppModule {}
+export class AppModule {
+}

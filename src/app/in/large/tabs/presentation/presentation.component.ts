@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-presentation',
@@ -6,5 +7,13 @@ import { Component } from '@angular/core';
     styleUrls: ['./presentation.component.scss'],
 })
 export class PresentationComponent {
-    constructor() {}
+    @Input() courseDescription!: string;
+
+    public htmlContent: SafeHtml;
+
+    constructor(
+        private sanitizer: DomSanitizer,
+    ) {
+        this.htmlContent = this.sanitizer.bypassSecurityTrustHtml(this.courseDescription);
+    }
 }

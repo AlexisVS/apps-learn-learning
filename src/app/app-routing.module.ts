@@ -1,13 +1,12 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, Route, RouterModule } from '@angular/router';
 import { AppComponent } from './in/app.component';
-import { LargeComponent } from './in/large/large.component';
-import { SmallComponent } from './in/small/small.component';
 
 const routes: Route[] = [
     {
-        path: ':slug',
+        path: 'course/:id/:slug',
         component: AppComponent,
+
     },
 ];
 
@@ -21,4 +20,5 @@ const routes: Route[] = [
     ],
     exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule {
+}
