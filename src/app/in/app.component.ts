@@ -56,44 +56,6 @@ export class AppComponent implements OnInit {
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
             this.hasAccessToCourse = true;
         }
-        // this.setDocumentTitle();
-    }
-
-    private setDocumentTitle(): void {
-        // Get the id from the URL
-        const courseId: number = +this.removeLeadingZeros(this.route.snapshot.paramMap.get('id')!);
-
-        console.log('courseId', courseId);
-
-        // Get the course title from the API
-        if (courseId && courseId > 0) {
-            this.api.collect('learn/Course', [['id', '=', courseId]], ['title']).then((course: Course): void => {
-                document.title = `Learning – ${course.title}`;
-            });
-        }
-
-        // let title: string | null = this.route.snapshot.paramMap.get('slug');
-        //
-        // if (title) {
-        //     // for reloading purpose
-        //     if (title?.includes('-')) {
-        //         title = title.replace(/-/g, ' ');
-        //     }
-        //     const courseTitleHyphenated: string = title.replace(/ /g, '-');
-        //
-        //     document.title = `Learn - ${title}`;
-        //     window.history.replaceState({}, '', `/learning/#/${courseTitleHyphenated}`);
-        //
-        //     window.addEventListener('beforeunload', (event: BeforeUnloadEvent): void => {
-        //         event.preventDefault();
-        //
-        //         window.history.replaceState({}, '', `/learning/#/${title}`);
-        //     });
-        // }
-    }
-
-    private removeLeadingZeros(str: string): string {
-        return str.replace(/^0+/, '');
     }
 
     public async onModuleClick(moduleId: number): Promise<void> {

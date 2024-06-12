@@ -125,7 +125,7 @@ export class LearnService {
     }
 
     private async loadCourse(): Promise<Course> {
-        if (!this.courseId) throw new Error('Course ID not set');
+        if (!this.courseId) throw new Error('LearnService.loadCourse => Course ID not set');
 
         try {
             this.course = await this.api.get('?get=learn_course', { course_id: this.courseId });
