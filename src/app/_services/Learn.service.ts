@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
+// @ts-ignore
 import { ApiService } from 'sb-shared-lib';
-import { User } from '../_types/equal';
-import { Course, UserStatement, UserStatus } from '../_types/learn';
-import { ActivatedRoute, Router } from '@angular/router';
-import { logging } from 'protractor';
+import { User, UserInfo } from '../_types/equal';
+import { Course, UserAccess, UserStatement, UserStatus } from '../_types/learn';
 
 @Injectable({
     providedIn: 'root',
 })
 export class LearnService {
     public user: User;
-    public userInfo: Record<string, any>;
-    public userAccess: Record<string, any>;
+    public userInfo: UserInfo;
+    public userAccess: UserAccess | null = null;
     public userStatus: UserStatus[];
 
     public courseId: string;
@@ -23,47 +22,20 @@ export class LearnService {
 
     constructor(
         private api: ApiService,
-        private route: ActivatedRoute,
-        private router: Router,
     ) {
     }
 
-    public async loadRessources(): Promise<void> {
+    public async loadRessources(courseId: number): Promise<void> {
         try {
-            await this.setCourseId();
+            this.courseId = courseId.toString();
             await this.getUserInfos();
             await this.loadCourse();
+            this.setDocumentTitle();
             this.setCurrentModuleAndChapterIndex();
         } catch (error) {
             console.error('LearnService.loadRessources =>', error);
         }
     }
-
-    private async setCourseId(): Promise<void> {
-        this.route.params.subscribe(params => {
-            if (params.id) {
-                this.courseId = params.id;
-            }
-        });
-
-        if (!this.courseId) {
-            throw new Error('LearnService.setCourseId => Course ID not set');
-        }
-    }
-
-    // private async getCourseIdFromSlug(courseTitleSlug: string): Promise<string | null> {
-    //     courseTitleSlug = courseTitleSlug.replace(/-/g, ' ');
-    //
-    //     try {
-    //         return (
-    //             await this.api.collect('learn\\Course', [['title', '=', courseTitleSlug]], ['id'])
-    //         )[0].id.toString();
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    //
-    //     return null;
-    // }
 
     private async getUserInfos(): Promise<void> {
         try {
@@ -95,7 +67,7 @@ export class LearnService {
                         ['user_id', '=', this.userInfo.id],
                         ['course_id', '=', this.courseId],
                     ],
-                    ['course_id', 'module_id', 'user_id', 'chapter_index', 'page_index', 'page_count', 'is_complete'],
+                    ['id', 'name', 'code', 'code_alpha', 'course_id', 'master_user_id', 'user_id', 'is_complete'],
                     'module_id',
                 )
             )[0];
@@ -125,15 +97,17 @@ export class LearnService {
     }
 
     private async loadCourse(): Promise<Course> {
-        if (!this.courseId) throw new Error('LearnService.loadCourse => Course ID not set');
-
         try {
             this.course = await this.api.get('?get=learn_course', { course_id: this.courseId });
         } catch (error) {
-            console.error(error);
+            console.error('Error: LearnService.loadCourse =>', error);
         }
 
         return this.course;
+    }
+
+    private setDocumentTitle(): void {
+        document.title = 'Learning | ' + this.course.title;
     }
 
     private setCurrentModuleAndChapterIndex(): void {
@@ -183,5 +157,47 @@ export class LearnService {
         }
 
         return this.course;
+    }
+
+    /**
+     * Check if the user has access to the course edit mode by tree conditions:
+     * - The user is in the admins group
+     * - The user is in the authors of the course
+     * - The user is a master_user that is an admin or the course creator
+     */
+    public async userHasAccessToCourseEditMode(): Promise<boolean> {
+        let isCourseCreator: boolean = false,
+            isAdmin: boolean = false,
+            isMasterUser: boolean = false;
+
+        // Check if the user is the course creator
+        if (this.course && this.course?.creator === this.userInfo.id) {
+            isCourseCreator = true;
+        }
+
+        // Check if the user is an admin
+        if (this.userInfo.groups.includes('admins')) {
+            isAdmin = true;
+        }
+
+        // Check if the user is a master_user and if it's an admin or the course creator
+        if (this.userAccess) {
+            const masterUser = (await this.api.collect(
+                'core\\User',
+                [['id', '=', this.userAccess.master_user_id]],
+                ['id'],
+            ))[0] as User;
+
+            const masterUserGroups: string[] = (
+                await this.api.get(`?get=core_user_groups&user=${this.userAccess.master_user_id}`))
+                // remove all spaces in the string and split it by comma
+                .replace(/\s/g, '').split(',');
+
+            if (masterUserGroups.includes('admins') || masterUser.id === this.course.creator) {
+                isMasterUser = true;
+            }
+        }
+
+        return isCourseCreator || isAdmin || isMasterUser;
     }
 }

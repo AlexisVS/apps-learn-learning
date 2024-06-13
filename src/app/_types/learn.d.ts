@@ -135,9 +135,20 @@ export type UserStatus = {
     is_complete: boolean;
 };
 
+export type UserAccess = {
+    id: number;
+    name: number;
+    code: number;
+    code_alpha: string;
+    course_id: number;
+    master_user_id: number;
+    user_id: number;
+    is_complete: boolean | number; /** Not sure if it's a boolean or a number */
+}
+
 export type UserStatement = {
     user: User;
-    userAccess: any;
-    userInfo: any;
+    userAccess: UserAccess;
+    userInfo: Equal.UserInfo;
     userStatus: UserStatus[];
 };

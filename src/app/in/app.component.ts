@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
         this.environnementInfo = await this.api.get('appinfo/learn/learning');
         this.appInfo = await this.api.get('envinfo');
 
-        await this.learnService.loadRessources();
+        await this.learnService.loadRessources(+this.route.snapshot.params.id);
         this.userStatement = this.learnService.getUserStatement();
         this.course = this.learnService.course;
 

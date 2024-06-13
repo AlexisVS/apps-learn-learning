@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { Course } from '../../../../_types/learn';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { LearnService } from '../../../../_services/Learn.service';
 
 @Component({
     selector: 'app-content',
@@ -16,20 +18,30 @@ export class ContentComponent implements OnInit, AfterViewInit {
     public qursusUrl: SafeResourceUrl;
 
     constructor(
+        private route: ActivatedRoute,
+        private learnService: LearnService,
         private sanitizer: DomSanitizer,
     ) {
     }
 
     ngOnInit(): void {
-        this.qursusUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-            this.appInfo.backend_url +
-            '/qursus/?module=' +
-            this.course.modules[this.currentModuleProgressionIndex].id);
+        const base_url = this.appInfo.backend_url + '/qursus';
+        let query_string = '?module=' + this.course.modules[this.currentModuleProgressionIndex].id;
+
+        if (
+            this.route.snapshot.queryParamMap.has('mode') &&
+            this.route.snapshot.queryParamMap.get('mode') === 'edit' &&
+            this.learnService.userHasAccessToCourseEditMode()
+        ) {
+            query_string += '&mode=edit';
+        }
+
+        this.qursusUrl = this.sanitizer.bypassSecurityTrustResourceUrl(base_url + query_string);
         // '&chapter=' +
         // this.course.modules[this.currentModuleProgressionIndex].chapters[this.currentChapterProgressionIndex].id;
 
         console.log(
-            'ContentComponent::ngOnInit',
+            'ContentTabComponent::ngOnInit ( qursus )',
             this.appInfo,
             this.course,
             this.currentModuleProgressionIndex,

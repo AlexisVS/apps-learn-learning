@@ -6,7 +6,6 @@ const routes: Route[] = [
     {
         path: 'course/:id/:slug',
         component: AppComponent,
-
     },
 ];
 
