@@ -9,8 +9,7 @@ import {
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, UserStatement } from '../../_types/learn';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { MatIcon } from '@angular/material/icon';
+import { EnvironmentInfo } from '../../_types/equal';
 
 type DrawerState = 'inactive' | 'active' | 'pinned';
 
@@ -24,7 +23,7 @@ export class LargeComponent implements AfterViewInit {
     @ViewChild('sideBarMenuButton') sideBarMenuButton: MatButton;
 
     @Input() public userStatement: UserStatement;
-    @Input() public environnementInfo: Record<string, any>;
+    @Input() public environnementInfo: EnvironmentInfo;
     @Input() public appInfo: Record<string, any>;
     @Input() public course: Course;
     @Input() public hasAccessToCourse: boolean;
@@ -41,8 +40,26 @@ export class LargeComponent implements AfterViewInit {
     public selectedModuleIndex: number = 0;
 
     constructor() {
+        this.onClickOutsideActiveStateDrawer();
+        this.qursusIframeClickedInside();
+    }
+
+    private qursusIframeClickedInside(): void {
+        window.addEventListener('message', (event: MessageEvent) => {
+            console.log('message event', event);
+
+            // get the scheme + domain of the navigator
+            const url: URL = new URL(window.location.href);
+
+            if (event.origin === url.origin && this.drawerState === 'active') {
+                this.drawerState = 'inactive';
+                this.menuIcon = 'menu';
+            }
+        });
+    }
+
+    private onClickOutsideActiveStateDrawer(): void {
         window.addEventListener('click', (event: MouseEvent): void => {
-            console.log('click', event, this.drawerState);
             if (
                 this.drawerState === 'active' &&
                 !this.sideBarMenuButton._elementRef.nativeElement.contains(event.target as Node)
@@ -51,15 +68,6 @@ export class LargeComponent implements AfterViewInit {
                     this.drawerState = 'inactive';
                     this.menuIcon = 'menu';
                 }
-            }
-        });
-
-        window.addEventListener('message', (event: MessageEvent) => {
-            console.log('message event', event);
-
-            if (this.drawerState === 'active') {
-                this.drawerState = 'inactive';
-                this.menuIcon = 'menu';
             }
         });
     }

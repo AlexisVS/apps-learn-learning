@@ -4,6 +4,7 @@ import { Chapter, Course, Module, UserStatement } from '../_types/learn';
 import { ApiService } from 'sb-shared-lib';
 import { ActivatedRoute } from '@angular/router';
 import { LearnService } from '../_services/Learn.service';
+import { MessageEventEnum, QursusMessageEvent } from '../_types/qursus';
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
@@ -55,7 +56,34 @@ export class AppComponent implements OnInit {
             this.currentModuleProgressionIndex = this.learnService.currentModuleProgressionIndex;
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
             this.hasAccessToCourse = true;
+            this.SetQursusIframeListener();
         }
+    }
+
+    // TODO: Finish this method
+    /**
+     * Add a listener for the Qursus iframe
+     * Receive the message from the Qursus iframe and handle it
+     *
+     */
+    private SetQursusIframeListener(): void {
+        window.addEventListener('message', (event: MessageEvent) => {
+            const qursusMessageEvent: QursusMessageEvent = event.data;
+
+            // get the scheme + domain of the navigator
+            const url: URL = new URL(window.location.href);
+
+            if (event.origin === url.origin) {
+                switch (qursusMessageEvent.type) {
+                    case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
+                        break;
+                    case MessageEventEnum.CHAPTER_REMOVED:
+                        break;
+                    case MessageEventEnum.PAGE_REMOVED:
+                        break;
+                }
+            }
+        });
     }
 
     public async onModuleClick(moduleId: number): Promise<void> {

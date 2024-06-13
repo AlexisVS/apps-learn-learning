@@ -23,6 +23,7 @@ import { ContentComponent } from './in/large/tabs/content/content.component';
 import { PresentationComponent } from './in/large/tabs/presentation/presentation.component';
 import { QAndAComponent } from './in/large/tabs/q-and-a/q-and-a.component';
 import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
+import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.component';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
         PresentationComponent,
         QAndAComponent,
         ReviewsComponent,
+        CourseNotFoundComponent,
     ],
     imports: [
         AppRoutingModule,

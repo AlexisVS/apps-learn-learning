@@ -163,12 +163,10 @@ export class LearnService {
      * Check if the user has access to the course edit mode by tree conditions:
      * - The user is in the admins group
      * - The user is in the authors of the course
-     * - The user is a master_user that is an admin or the course creator
      */
     public async userHasAccessToCourseEditMode(): Promise<boolean> {
         let isCourseCreator: boolean = false,
-            isAdmin: boolean = false,
-            isMasterUser: boolean = false;
+            isAdmin: boolean = false;
 
         // Check if the user is the course creator
         if (this.course && this.course?.creator === this.userInfo.id) {
@@ -180,24 +178,6 @@ export class LearnService {
             isAdmin = true;
         }
 
-        // Check if the user is a master_user and if it's an admin or the course creator
-        if (this.userAccess) {
-            const masterUser = (await this.api.collect(
-                'core\\User',
-                [['id', '=', this.userAccess.master_user_id]],
-                ['id'],
-            ))[0] as User;
-
-            const masterUserGroups: string[] = (
-                await this.api.get(`?get=core_user_groups&user=${this.userAccess.master_user_id}`))
-                // remove all spaces in the string and split it by comma
-                .replace(/\s/g, '').split(',');
-
-            if (masterUserGroups.includes('admins') || masterUser.id === this.course.creator) {
-                isMasterUser = true;
-            }
-        }
-
-        return isCourseCreator || isAdmin || isMasterUser;
+        return isCourseCreator || isAdmin;
     }
 }
