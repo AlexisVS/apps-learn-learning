@@ -68,5 +68,4 @@ import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.
     ],
     bootstrap: [AppRootComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

@@ -1,10 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { Chapter, Course, Module, UserStatement } from '../_types/learn';
+import { EnvironmentInfo } from '../_types/equal';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
 import { ActivatedRoute } from '@angular/router';
 import { LearnService } from '../_services/Learn.service';
-import { MessageEventEnum, QursusMessageEvent } from '../_types/qursus';
+
+export enum MessageEventEnum {
+    EQ_ACTION_LEARN_NEXT = 'eq_action_learn_next',
+    CHAPTER_REMOVED = 'chapter_removed',
+    PAGE_REMOVED = 'page_removed',
+    CHAPTER_PROGRESSION_FINISHED = 'chapter_progression_finished',
+}
+
+export type QursusMessageEvent = {
+    type: MessageEventEnum;
+    data: any;
+};
+
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
@@ -14,7 +27,7 @@ import { MessageEventEnum, QursusMessageEvent } from '../_types/qursus';
 })
 export class AppComponent implements OnInit {
     public userStatement: UserStatement;
-    public environnementInfo: Record<string, any>;
+    public environnementInfo: EnvironmentInfo;
     public appInfo: Record<string, any>;
 
     public course: Course;
@@ -56,30 +69,54 @@ export class AppComponent implements OnInit {
             this.currentModuleProgressionIndex = this.learnService.currentModuleProgressionIndex;
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
             this.hasAccessToCourse = true;
-            this.SetQursusIframeListener();
+            await this.SetQursusIframeListener();
         }
     }
 
-    // TODO: Finish this method
     /**
      * Add a listener for the Qursus iframe
      * Receive the message from the Qursus iframe and handle it
      *
      */
-    private SetQursusIframeListener(): void {
-        window.addEventListener('message', (event: MessageEvent) => {
+    private async SetQursusIframeListener(): Promise<void> {
+        window.addEventListener('message', async (event: MessageEvent) => {
             const qursusMessageEvent: QursusMessageEvent = event.data;
+            const navigatorUrl: URL = new URL(window.location.href);
 
-            // get the scheme + domain of the navigator
-            const url: URL = new URL(window.location.href);
-
-            if (event.origin === url.origin) {
+            if (event.origin === navigatorUrl.origin) {
                 switch (qursusMessageEvent.type) {
                     case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
+                        await this.learnService.loadUserStatus();
+                        this.userStatement = this.learnService.getUserStatement();
+                        this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
+                        if (qursusMessageEvent.data.module_index !== this.currentModuleProgressionIndex) {
+                            console.log('AppComponent.SetQursusIframeListener => EQ_ACTION_LEARN_NEXT');
+                        }
                         break;
                     case MessageEventEnum.CHAPTER_REMOVED:
+                        this.learnService.removeChapter(
+                            qursusMessageEvent.data.module_id,
+                            qursusMessageEvent.data.chapter_id,
+                        );
+                        if (this.course !== this.learnService.course) {
+                            console.log('AppComponent.SetQursusIframeListener => CHAPTER_REMOVED');
+                        }
+                        this.course = this.learnService.course;
+
                         break;
                     case MessageEventEnum.PAGE_REMOVED:
+                        await this.learnService.reloadChapter(
+                            qursusMessageEvent.data.module_id,
+                            qursusMessageEvent.data.chapter_id,
+                        );
+
+                        if (this.course !== this.learnService.course) {
+                            console.log('AppComponent.SetQursusIframeListener => PAGE_REMOVED');
+                        }
+
+                        this.course = this.learnService.course;
+                        break;
+                    case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
                         break;
                 }
             }

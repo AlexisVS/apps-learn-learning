@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 // @ts-ignore
-import { AuthService, ApiService } from 'sb-shared-lib';
+import { ApiService } from 'sb-shared-lib';
 
 @Component({
     selector: 'app-root',
@@ -12,9 +11,7 @@ import { AuthService, ApiService } from 'sb-shared-lib';
 export class AppRootComponent implements OnInit {
     public userInfo: any;
 
-    constructor(
-        private api: ApiService,
-    ) {}
+    constructor(private api: ApiService) {}
 
     public async ngOnInit(): Promise<void> {
         try {

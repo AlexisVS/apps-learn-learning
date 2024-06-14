@@ -11,9 +11,7 @@ export class PresentationComponent {
 
     public htmlContent: SafeHtml;
 
-    constructor(
-        private sanitizer: DomSanitizer,
-    ) {
+    constructor(private sanitizer: DomSanitizer) {
         this.htmlContent = this.sanitizer.bypassSecurityTrustHtml(this.courseDescription);
     }
 }

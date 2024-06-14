@@ -20,9 +20,8 @@ export class ContentComponent implements OnInit, AfterViewInit {
     constructor(
         private route: ActivatedRoute,
         private learnService: LearnService,
-        private sanitizer: DomSanitizer,
-    ) {
-    }
+        private sanitizer: DomSanitizer
+    ) {}
 
     ngOnInit(): void {
         const base_url = this.appInfo.backend_url + '/qursus';
@@ -46,7 +45,7 @@ export class ContentComponent implements OnInit, AfterViewInit {
             this.course,
             this.currentModuleProgressionIndex,
             this.currentChapterProgressionIndex,
-            this.qursusUrl,
+            this.qursusUrl
         );
     }
 

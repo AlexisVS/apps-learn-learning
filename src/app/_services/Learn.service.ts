@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
 import { User, UserInfo } from '../_types/equal';
-import { Course, UserAccess, UserStatement, UserStatus } from '../_types/learn';
+import { Chapter, Course, UserAccess, UserStatement, UserStatus } from '../_types/learn';
 
 @Injectable({
     providedIn: 'root',
@@ -72,28 +72,32 @@ export class LearnService {
                 )
             )[0];
 
-            this.userStatus = await this.api.collect(
-                'learn\\UserStatus',
-                [
-                    ['user_id', '=', this.userInfo.id],
-                    ['course_id', '=', this.courseId],
-                ],
-                [
-                    'code',
-                    'code_alpha',
-                    'course_id',
-                    'master_user_id',
-                    'user_id',
-                    'is_complete',
-                    'module_id',
-                    'chapter_index',
-                ],
-                'module_id',
-                'desc',
-            );
+            await this.loadUserStatus();
         } catch (error) {
             console.error(error);
         }
+    }
+
+    public async loadUserStatus(): Promise<void> {
+        this.userStatus = await this.api.collect(
+            'learn\\UserStatus',
+            [
+                ['user_id', '=', this.userInfo.id],
+                ['course_id', '=', this.courseId],
+            ],
+            [
+                'code',
+                'code_alpha',
+                'course_id',
+                'master_user_id',
+                'user_id',
+                'is_complete',
+                'module_id',
+                'chapter_index',
+            ],
+            'module_id',
+            'desc',
+        );
     }
 
     private async loadCourse(): Promise<Course> {
@@ -179,5 +183,53 @@ export class LearnService {
         }
 
         return isCourseCreator || isAdmin;
+    }
+
+    /**
+     * Reload the chapter from the course.
+     *
+     * @param moduleId
+     * @param chapterId
+     */
+    public async reloadChapter(moduleId: number, chapterId: number): Promise<void> {
+        try {
+            const chapter: Chapter = (await this.api.collect(
+                'learn\\Chapter',
+                [
+                    ['module_id', '=', moduleId],
+                    ['id', '=', chapterId],
+                ],
+                [
+                    'id',
+                    'identifier',
+                    'order',
+                    'title',
+                    'duration',
+                    'description',
+                    'page_count',
+                ],
+            ))[0];
+
+            const moduleIndex = this.course.modules.findIndex(module => module.id === moduleId);
+            const chapterIndex = this.course.modules[moduleIndex].chapters.findIndex(chapter => chapter.id === chapterId);
+
+            this.course.modules[moduleIndex].chapters[chapterIndex] = chapter;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Remove a chapter from the course.
+     *
+     * @param moduleId
+     * @param chapterId
+     */
+    public removeChapter(moduleId: number, chapterId: number): void {
+        const moduleIndex = this.course.modules.findIndex(module => module.id === moduleId);
+        const chapterIndex = this.course.modules[moduleIndex].chapters.findIndex(chapter => chapter.id === chapterId);
+
+        this.course.modules[moduleIndex].chapters.splice(chapterIndex, 1);
     }
 }

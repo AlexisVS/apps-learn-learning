@@ -143,8 +143,8 @@ export type UserAccess = {
     course_id: number;
     master_user_id: number;
     user_id: number;
-    is_complete: boolean | number; /** Not sure if it's a boolean or a number */
-}
+    is_complete: boolean | number /** Not sure if it's a boolean or a number */;
+};
 
 export type UserStatement = {
     user: User;

@@ -3,8 +3,8 @@
 }
 
 body {
-    padding: 0;
-    margin: 0
+    margin: 0;
+    padding: 0
 }
 
 #notfound {
@@ -13,66 +13,71 @@ body {
     background: #030005
 }
 
-#notfound .notfound {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%)
-}
-
 .notfound {
-    max-width: 767px;
     width: 100%;
+    max-width: 767px;
     line-height: 1.4;
     text-align: center
 }
 
+#notfound .notfound {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+}
+
+
 .notfound .notfound-404 {
     position: relative;
+    z-index: -1;
     height: 180px;
-    margin-bottom: 20px;
-    z-index: -1
+    margin-bottom: 20px
 }
 
 .notfound .notfound-404 h1 {
-    font-family: montserrat, sans-serif;
     position: absolute;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 224px;
-    font-weight: 900;
+
     margin-top: 0;
     margin-bottom: 0;
     margin-left: -12px;
+
+    font-family: montserrat, sans-serif;
+    font-size: 224px;
+    font-weight: 900;
     color: #030005;
-    text-transform: uppercase;
     text-shadow: -1px -1px 0 #8400ff, 1px 1px 0 #ff005a;
+    text-transform: uppercase;
     letter-spacing: -20px
 }
 
 .notfound .notfound-404 h2 {
-    font-family: montserrat, sans-serif;
     position: absolute;
-    left: 0;
-    right: 0;
     top: 110px;
+    right: 0;
+    left: 0;
+
+    margin: 0;
+
+    font-family: montserrat, sans-serif;
     font-size: 42px;
     font-weight: 700;
     color: #fff;
-    text-transform: uppercase;
     text-shadow: 0 2px 0 #8400ff;
-    letter-spacing: 13px;
-    margin: 0
+    text-transform: uppercase;
+    letter-spacing: 13px
 }
 
-@media only screen and (max-width: 767px) {
+@media only screen and (width <= 767px) {
     .notfound .notfound-404 h2 {
         font-size: 24px
     }
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (width <= 480px) {
     .notfound .notfound-404 h1 {
         font-size: 182px
     }

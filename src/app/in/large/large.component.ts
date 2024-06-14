@@ -1,12 +1,4 @@
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    Output,
-    ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, UserStatement } from '../../_types/learn';
 import { EnvironmentInfo } from '../../_types/equal';
