@@ -86,9 +86,14 @@ export class TopBarComponent implements OnInit {
 
     public computeProgressTotalStats(): void {
         // current
-        const activeModuleLessonsDurations: number = this.currentModule.chapters
-            .filter(chapter => chapter.order <= this.currentLesson.order)
-            .reduce((acc, chapter) => acc + chapter.duration, 0);
+        let activeModuleLessonsDurations: number = 0;
+
+        if (this.userStatement.userStatus
+            .filter(userStatus => userStatus.module_id === this.currentModule.id && userStatus.chapter_index > 0).length) {
+            activeModuleLessonsDurations = this.currentModule.chapters
+                .filter(chapter => chapter.order <= this.currentLesson.order)
+                .reduce((acc, chapter) => acc + chapter.duration, 0);
+        }
 
         const previousCourseModulesDurations: number = this.course.modules
             .filter(module => module.order < this.currentModule.order)

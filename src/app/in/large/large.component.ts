@@ -22,10 +22,12 @@ export class LargeComponent implements AfterViewInit {
     @Input() public isLoading: boolean;
     @Input() public currentModuleProgressionIndex: number;
     @Input() public currentChapterProgressionIndex: number;
+    @Input() public currentPageProgressionIndex: number;
 
-    @Output() public moduleToLoad: EventEmitter<number> = new EventEmitter<number>();
-
-    public contentTabHeight: number;
+    @Output() public moduleAndChapterToLoad: EventEmitter<{ moduleId: number, chapterId: number }> = new EventEmitter<{
+        moduleId: number,
+        chapterId: number
+    }>();
 
     public drawerState: DrawerState = 'inactive';
     public menuIcon: string = 'menu';
@@ -37,8 +39,7 @@ export class LargeComponent implements AfterViewInit {
     }
 
     private qursusIframeClickedInside(): void {
-        window.addEventListener('message', (event: MessageEvent) => {
-            console.log('message event', event);
+        window.addEventListener('message', (event: MessageEvent): void => {
 
             // get the scheme + domain of the navigator
             const url: URL = new URL(window.location.href);
@@ -70,7 +71,7 @@ export class LargeComponent implements AfterViewInit {
         console.log(`${height}`);
     }
 
-    public onSideBarButtonClick(): void {
+    public onDrawerButtonClick(): void {
         switch (this.drawerState) {
             case 'inactive':
                 this.drawerState = 'active';
@@ -108,7 +109,7 @@ export class LargeComponent implements AfterViewInit {
         }
     }
 
-    public async onClickChapter(moduleId: number): Promise<void> {
-        this.moduleToLoad.emit(moduleId);
+    public async onClickChapter(moduleId: number, chapterId: number): Promise<void> {
+        this.moduleAndChapterToLoad.emit({ moduleId, chapterId });
     }
 }

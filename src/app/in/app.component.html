@@ -9,6 +9,7 @@
     [isLoading]="isLoading"
     [currentModuleProgressionIndex]="currentModuleProgressionIndex"
     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
-    (moduleToLoad)="onModuleClick($event)"
+    [currentPageProgressionIndex]="currentPageProgressionIndex"
+    (moduleAndChapterToLoad)="onModuleClick($event)"
 ></app-large>
 <app-small *ngIf="device === 'small'"></app-small>

@@ -11,7 +11,7 @@
             <input type="search" />
         </div>
 
-        <button #sideBarMenuButton *ngIf="course" mat-icon-button (click)="onSideBarButtonClick()">
+        <button #sideBarMenuButton *ngIf="course" mat-icon-button (click)="onDrawerButtonClick()">
             <mat-icon>{{ menuIcon }}</mat-icon>
         </button>
     </div>
@@ -29,6 +29,7 @@
                     [course]="course"
                     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
                     [currentModuleProgressionIndex]="currentChapterProgressionIndex"
+                    [currentPageProgressionIndex]="currentPageProgressionIndex"
                 ></app-content>
             </mat-tab>
             <mat-tab label="Presentation">
@@ -71,7 +72,7 @@
                                     *ngIf="chapter"
                                     [value]="chapter"
                                     class="item"
-                                    (click)="onClickChapter(module.id)">
+                                    (click)="onClickChapter(module.id, chapter.id)">
                                     <div class="content">
                                         <div class="row">
                                             <span class="font-size--3">{{ chapter.title }}</span>

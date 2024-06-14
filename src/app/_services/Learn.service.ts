@@ -19,6 +19,7 @@ export class LearnService {
 
     public currentModuleProgressionIndex: number = 0;
     public currentChapterProgressionIndex: number = 0;
+    public currentPageProgressionIndex: number = 0;
 
     constructor(
         private api: ApiService,
@@ -94,6 +95,7 @@ export class LearnService {
                 'is_complete',
                 'module_id',
                 'chapter_index',
+                'page_index',
             ],
             'module_id',
             'desc',
@@ -117,21 +119,19 @@ export class LearnService {
     private setCurrentModuleAndChapterIndex(): void {
         let moduleIndex: number = 0;
         let chapterIndex: number = 0;
+        let pageIndex: number = 0;
 
-        if (this.userStatus.length > 0 && this.course.modules && this.course.modules.length > 0) {
+        if (this.userStatus.length) {
             const currentStatus: UserStatus = this.userStatus.sort((a, b) => b.module_id - a.module_id)[0];
             const currentModuleId: number = currentStatus.module_id;
-            chapterIndex = currentStatus.chapter_index;
-
             moduleIndex = this.course.modules.findIndex(module => module.id === currentModuleId);
+            chapterIndex = currentStatus.chapter_index;
+            pageIndex = currentStatus.page_index;
 
-            if (moduleIndex === -1) {
-                moduleIndex = 0;
-            }
+            this.currentModuleProgressionIndex = moduleIndex;
+            this.currentChapterProgressionIndex = chapterIndex;
+            this.currentPageProgressionIndex = pageIndex;
         }
-
-        this.currentModuleProgressionIndex = moduleIndex;
-        this.currentChapterProgressionIndex = chapterIndex;
     }
 
     public getUserStatement(): UserStatement {

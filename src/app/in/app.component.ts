@@ -11,6 +11,7 @@ export enum MessageEventEnum {
     CHAPTER_REMOVED = 'chapter_removed',
     PAGE_REMOVED = 'page_removed',
     CHAPTER_PROGRESSION_FINISHED = 'chapter_progression_finished',
+    MODULE_PROGRESSION_FINISHED = 'module_progression_finished',
 }
 
 export type QursusMessageEvent = {
@@ -36,6 +37,7 @@ export class AppComponent implements OnInit {
 
     public currentModuleProgressionIndex: number;
     public currentChapterProgressionIndex: number;
+    public currentPageProgressionIndex: number;
 
     public device: 'small' | 'large';
 
@@ -68,6 +70,7 @@ export class AppComponent implements OnInit {
             this.isLoading = false;
             this.currentModuleProgressionIndex = this.learnService.currentModuleProgressionIndex;
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
+            this.currentPageProgressionIndex = this.learnService.currentPageProgressionIndex;
             this.hasAccessToCourse = true;
             await this.SetQursusIframeListener();
         }
@@ -79,9 +82,10 @@ export class AppComponent implements OnInit {
      *
      */
     private async SetQursusIframeListener(): Promise<void> {
-        window.addEventListener('message', async (event: MessageEvent) => {
+        window.addEventListener('message', async (event: MessageEvent): Promise<void> => {
             const qursusMessageEvent: QursusMessageEvent = event.data;
             const navigatorUrl: URL = new URL(window.location.href);
+            console.log('AppComponent.SetQursusIframeListener => ' + qursusMessageEvent.type, qursusMessageEvent.data);
 
             if (event.origin === navigatorUrl.origin) {
                 switch (qursusMessageEvent.type) {
@@ -118,13 +122,19 @@ export class AppComponent implements OnInit {
                         break;
                     case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
                         break;
+
+                    case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
+                        this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === qursusMessageEvent.data.module_id) + 1;
+                        this.currentChapterProgressionIndex = 0;
+                        await this.learnService.loadUserStatus();
+                        break;
                 }
             }
         });
     }
 
-    public async onModuleClick(moduleId: number): Promise<void> {
-        this.course = await this.learnService.loadCourseModule(moduleId);
+    public async onModuleClick(data: { moduleId: number, chapterId: number }): Promise<void> {
+        this.course = await this.learnService.loadCourseModule(data.moduleId);
     }
 
     public onStarredLessonClick(event: MouseEvent, lesson: Chapter, module: Module): void {

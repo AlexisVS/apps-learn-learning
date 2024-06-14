@@ -14,18 +14,22 @@ export class ContentComponent implements OnInit, AfterViewInit {
     @Input() public course: Course;
     @Input() public currentModuleProgressionIndex: number;
     @Input() public currentChapterProgressionIndex: number;
+    @Input() public currentPageProgressionIndex: number;
 
     public qursusUrl: SafeResourceUrl;
 
     constructor(
         private route: ActivatedRoute,
         private learnService: LearnService,
-        private sanitizer: DomSanitizer
-    ) {}
+        private sanitizer: DomSanitizer,
+    ) {
+    }
 
     ngOnInit(): void {
         const base_url = this.appInfo.backend_url + '/qursus';
         let query_string = '?module=' + this.course.modules[this.currentModuleProgressionIndex].id;
+            query_string += '&chapter=' + this.currentChapterProgressionIndex;
+            query_string += '&page=' + this.currentPageProgressionIndex;
 
         if (
             this.route.snapshot.queryParamMap.has('mode') &&
@@ -45,7 +49,7 @@ export class ContentComponent implements OnInit, AfterViewInit {
             this.course,
             this.currentModuleProgressionIndex,
             this.currentChapterProgressionIndex,
-            this.qursusUrl
+            this.qursusUrl,
         );
     }
 
