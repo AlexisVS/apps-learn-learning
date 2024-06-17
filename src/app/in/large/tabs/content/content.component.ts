@@ -26,6 +26,7 @@ export class ContentComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        console.log('ContentTabComponent::ngOnInit ( qursus )', this.course, this.currentModuleProgressionIndex);
         const base_url = this.appInfo.backend_url + '/qursus';
         let query_string = '?module=' + this.course.modules[this.currentModuleProgressionIndex].id;
         query_string += '&chapter=' + this.currentChapterProgressionIndex;

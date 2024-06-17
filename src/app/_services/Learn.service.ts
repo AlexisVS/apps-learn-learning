@@ -128,6 +128,8 @@ export class LearnService {
             chapterIndex = currentStatus.chapter_index;
             pageIndex = currentStatus.page_index;
 
+            console.log('setCurrentModuleAndChapterIndex',currentModuleId, moduleIndex, chapterIndex, pageIndex, currentStatus);
+
             this.currentModuleProgressionIndex = moduleIndex;
             this.currentChapterProgressionIndex = chapterIndex;
             this.currentPageProgressionIndex = pageIndex;
