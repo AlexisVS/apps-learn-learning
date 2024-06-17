@@ -1,8 +1,8 @@
 <app-top-bar
     *ngIf="course && appInfo && environnementInfo && userStatement"
-    [environmentInfo]="environnementInfo"
-    [appInfo]="appInfo"
     [userStatement]="userStatement"
+    [currentChapterProgressionIndex]="currentChapterProgressionIndex"
+    [appInfo]="appInfo"
     [course]="course"></app-top-bar>
 <div class="body">
     <div class="side-bar">

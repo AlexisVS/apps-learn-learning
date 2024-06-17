@@ -28,8 +28,8 @@ export class ContentComponent implements OnInit, AfterViewInit {
     ngOnInit(): void {
         const base_url = this.appInfo.backend_url + '/qursus';
         let query_string = '?module=' + this.course.modules[this.currentModuleProgressionIndex].id;
-            query_string += '&chapter=' + this.currentChapterProgressionIndex;
-            query_string += '&page=' + this.currentPageProgressionIndex;
+        query_string += '&chapter=' + this.currentChapterProgressionIndex;
+        query_string += '&page=' + this.currentPageProgressionIndex;
 
         if (
             this.route.snapshot.queryParamMap.has('mode') &&
@@ -39,9 +39,9 @@ export class ContentComponent implements OnInit, AfterViewInit {
             query_string += '&mode=edit';
         }
 
+        console.log('ContentTabComponent::ngOnInit ( qursus )', query_string);
+
         this.qursusUrl = this.sanitizer.bypassSecurityTrustResourceUrl(base_url + query_string);
-        // '&chapter=' +
-        // this.course.modules[this.currentModuleProgressionIndex].chapters[this.currentChapterProgressionIndex].id;
 
         console.log(
             'ContentTabComponent::ngOnInit ( qursus )',

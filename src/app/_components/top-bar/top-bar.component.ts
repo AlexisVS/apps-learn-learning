@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Chapter, Course, Module, UserStatement } from '../../_types/learn';
+import { AppInfo } from '../../_types/equal';
 
 type TotalCourseProgress = {
     current: string;
@@ -12,11 +13,11 @@ type TotalCourseProgress = {
     templateUrl: './top-bar.component.html',
     styleUrls: ['./top-bar.component.scss'],
 })
-export class TopBarComponent implements OnInit {
-    @Input() public environmentInfo: Record<string, any>;
-    @Input() public appInfo: Record<string, any>;
+export class TopBarComponent implements OnInit, OnChanges {
     @Input() public userStatement: UserStatement;
     @Input() public course: Course;
+    @Input() public appInfo: AppInfo;
+    @Input() public currentChapterProgressionIndex: number;
 
     public currentModule: Module;
     public currentLesson: Chapter;
@@ -43,6 +44,21 @@ export class TopBarComponent implements OnInit {
         }
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+
+        if (
+            (changes.hasOwnProperty('userStatement') && changes.userStatement.currentValue !== changes.userStatement.previousValue) ||
+            (changes.hasOwnProperty('course') && changes.course.currentValue !== changes.course.previousValue)
+        ) {
+            this.ngOnInit();
+            console.table(changes.userStatement.currentValue);
+        }
+
+        if (changes.hasOwnProperty('currentChapterProgressionIndex') && changes.currentChapterProgressionIndex.currentValue !== changes.currentChapterProgressionIndex.previousValue) {
+            this.computeCurrentLessonProgress();
+        }
+    }
+
     public getCurrentModule(): Module {
         let moduleIndex: number = 0;
 
@@ -56,14 +72,7 @@ export class TopBarComponent implements OnInit {
     }
 
     public getCurrentLesson(): Chapter {
-        const currentChapters = this.userStatement.userStatus.sort((a, b) => b.chapter_index - a.chapter_index);
-        let lessonIndex: number = 0;
-
-        if (currentChapters.length > 0) {
-            lessonIndex = currentChapters[0].chapter_index;
-        }
-
-        return this.currentModule.chapters[lessonIndex];
+        return this.currentModule.chapters[this.currentChapterProgressionIndex];
     }
 
     public computeCurrentModuleProgress(): void {
@@ -71,17 +80,10 @@ export class TopBarComponent implements OnInit {
     }
 
     public computeCurrentLessonProgress(): void {
-        let userStatus = this.userStatement.userStatus
-            .filter(userStatus => userStatus.module_id === this.currentModule.id)
-            .sort((a, b) => b.chapter_index - a.chapter_index)[0];
+        const chapter_count: number = this.currentModule.chapters.length;
+        const page_count: number = this.currentLesson.page_count;
 
-        let currentChapterIndex: number = 0;
-
-        if (userStatus) {
-            currentChapterIndex = userStatus.chapter_index;
-        }
-
-        this.currentLessonProgress = `${currentChapterIndex} / ${this.currentModule.chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${this.currentLesson.page_count + 'p'}`;
+        this.currentLessonProgress = `${this.currentChapterProgressionIndex} / ${chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${page_count + 'p'}`;
     }
 
     public computeProgressTotalStats(): void {

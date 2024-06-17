@@ -72,65 +72,68 @@ export class AppComponent implements OnInit {
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
             this.currentPageProgressionIndex = this.learnService.currentPageProgressionIndex;
             this.hasAccessToCourse = true;
-            await this.SetQursusIframeListener();
         }
+
+        window.addEventListener('message', (event: MessageEvent): void => {
+            const navigatorUrl: URL = new URL(window.location.href);
+            if (event.origin === navigatorUrl.origin) {
+                return;
+            }
+            this.handleQursusIframeEvent(event);
+        });
     }
 
     /**
-     * Add a listener for the Qursus iframe
-     * Receive the message from the Qursus iframe and handle it
-     *
+     * Handle the Qursus iframe
      */
-    private async SetQursusIframeListener(): Promise<void> {
-        window.addEventListener('message', async (event: MessageEvent): Promise<void> => {
-            const qursusMessageEvent: QursusMessageEvent = event.data;
-            const navigatorUrl: URL = new URL(window.location.href);
-            console.log('AppComponent.SetQursusIframeListener => ' + qursusMessageEvent.type, qursusMessageEvent.data);
+    private async handleQursusIframeEvent(event: MessageEvent): Promise<void> {
+        const qursusMessageEvent: QursusMessageEvent = event.data;
 
-            if (event.origin === navigatorUrl.origin) {
-                switch (qursusMessageEvent.type) {
-                    case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
-                        await this.learnService.loadUserStatus();
-                        this.userStatement = this.learnService.getUserStatement();
-                        this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
-                        if (qursusMessageEvent.data.module_index !== this.currentModuleProgressionIndex) {
-                            console.log('AppComponent.SetQursusIframeListener => EQ_ACTION_LEARN_NEXT');
-                        }
-                        break;
-                    case MessageEventEnum.CHAPTER_REMOVED:
-                        this.learnService.removeChapter(
-                            qursusMessageEvent.data.module_id,
-                            qursusMessageEvent.data.chapter_id,
-                        );
-                        if (this.course !== this.learnService.course) {
-                            console.log('AppComponent.SetQursusIframeListener => CHAPTER_REMOVED');
-                        }
-                        this.course = this.learnService.course;
+        event.data.hasOwnProperty('type') && event.data.hasOwnProperty('data')
+            ? console.table({ name: qursusMessageEvent.type, ...qursusMessageEvent.data })
+            : console.table({ name: event.data });
 
-                        break;
-                    case MessageEventEnum.PAGE_REMOVED:
-                        await this.learnService.reloadChapter(
-                            qursusMessageEvent.data.module_id,
-                            qursusMessageEvent.data.chapter_id,
-                        );
+        switch (qursusMessageEvent.type) {
+            case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
+                await this.learnService.loadUserStatus();
+                this.userStatement = this.learnService.getUserStatement();
+                this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
+                break;
 
-                        if (this.course !== this.learnService.course) {
-                            console.log('AppComponent.SetQursusIframeListener => PAGE_REMOVED');
-                        }
+            case MessageEventEnum.CHAPTER_REMOVED:
+                this.learnService.removeChapter(
+                    qursusMessageEvent.data.module_id,
+                    qursusMessageEvent.data.chapter_id,
+                );
+                this.course = this.learnService.course;
+                break;
 
-                        this.course = this.learnService.course;
-                        break;
-                    case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
-                        break;
+            case MessageEventEnum.PAGE_REMOVED:
+                await this.learnService.reloadChapter(
+                    qursusMessageEvent.data.module_id,
+                    qursusMessageEvent.data.chapter_id,
+                );
+                this.course = this.learnService.course;
+                break;
 
-                    case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
-                        this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === qursusMessageEvent.data.module_id) + 1;
-                        this.currentChapterProgressionIndex = 0;
-                        await this.learnService.loadUserStatus();
-                        break;
-                }
-            }
-        });
+            case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
+                await this.learnService.loadUserStatus();
+                this.userStatement.userStatus = this.learnService.userStatus;
+                this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index + 1;
+                break;
+
+            case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
+                this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === qursusMessageEvent.data.module_id);
+                this.currentChapterProgressionIndex = 0;
+                this.currentPageProgressionIndex = 0;
+
+                await this.learnService.loadUserStatus();
+                this.userStatement.userStatus = this.learnService.userStatus;
+
+                const next_course_id: number = this.course.modules[this.currentModuleProgressionIndex + 1].id;
+                this.course = await this.learnService.loadCourseModule(next_course_id);
+                break;
+        }
     }
 
     public async onModuleClick(data: { moduleId: number, chapterId: number }): Promise<void> {
