@@ -3,7 +3,7 @@ import { Chapter, Course, Module, UserStatement } from '../_types/learn';
 import { EnvironmentInfo } from '../_types/equal';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LearnService } from '../_services/Learn.service';
 
 export enum MessageEventEnum {
@@ -44,6 +44,7 @@ export class AppComponent implements OnInit {
     constructor(
         private api: ApiService,
         private route: ActivatedRoute,
+        private router: Router,
         private learnService: LearnService,
     ) {
     }
@@ -67,16 +68,18 @@ export class AppComponent implements OnInit {
         this.course = this.learnService.course;
 
         if (this.course) {
-            this.isLoading = false;
             this.currentModuleProgressionIndex = this.learnService.currentModuleProgressionIndex;
             this.currentChapterProgressionIndex = this.learnService.currentChapterProgressionIndex;
             this.currentPageProgressionIndex = this.learnService.currentPageProgressionIndex;
             this.hasAccessToCourse = true;
+            this.isLoading = false;
+        } else {
+            await this.router.navigate(['**']);
         }
 
         window.addEventListener('message', (event: MessageEvent): void => {
             const navigatorUrl: URL = new URL(window.location.href);
-            if (event.origin === navigatorUrl.origin) {
+            if (event.origin !== navigatorUrl.origin) {
                 return;
             }
             this.handleQursusIframeEvent(event);
@@ -95,6 +98,7 @@ export class AppComponent implements OnInit {
 
         switch (qursusMessageEvent.type) {
             case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
+                this.learnService.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
                 await this.learnService.loadUserStatus();
                 this.userStatement = this.learnService.getUserStatement();
                 this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
@@ -119,19 +123,20 @@ export class AppComponent implements OnInit {
             case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
                 await this.learnService.loadUserStatus();
                 this.userStatement.userStatus = this.learnService.userStatus;
-                this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index + 1;
+                this.currentChapterProgressionIndex = qursusMessageEvent.data.chapter_index;
                 break;
 
             case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
                 this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === qursusMessageEvent.data.module_id);
-                this.currentChapterProgressionIndex = 0;
-                this.currentPageProgressionIndex = 0;
+
+                const next_course_id: number = this.course.modules[this.currentModuleProgressionIndex + 1].id;
+                this.course = await this.learnService.loadCourseModule(next_course_id);
 
                 await this.learnService.loadUserStatus();
                 this.userStatement.userStatus = this.learnService.userStatus;
 
-                const next_course_id: number = this.course.modules[this.currentModuleProgressionIndex + 1].id;
-                this.course = await this.learnService.loadCourseModule(next_course_id);
+                this.currentChapterProgressionIndex = 0;
+                this.currentPageProgressionIndex = 0;
                 break;
         }
     }

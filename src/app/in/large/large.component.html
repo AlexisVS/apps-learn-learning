@@ -2,6 +2,7 @@
     *ngIf="course && appInfo && environnementInfo && userStatement"
     [userStatement]="userStatement"
     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
+    [currentPageProgressionIndex]="currentPageProgressionIndex"
     [appInfo]="appInfo"
     [course]="course"></app-top-bar>
 <div class="body">
@@ -28,7 +29,7 @@
                     [appInfo]="appInfo"
                     [course]="course"
                     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
-                    [currentModuleProgressionIndex]="currentChapterProgressionIndex"
+                    [currentModuleProgressionIndex]="currentModuleProgressionIndex"
                     [currentPageProgressionIndex]="currentPageProgressionIndex"
                 ></app-content>
             </mat-tab>

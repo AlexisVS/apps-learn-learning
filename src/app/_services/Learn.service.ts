@@ -80,7 +80,7 @@ export class LearnService {
     }
 
     public async loadUserStatus(): Promise<void> {
-        this.userStatus = await this.api.collect(
+        this.userStatus = (await this.api.collect(
             'learn\\UserStatus',
             [
                 ['user_id', '=', this.userInfo.id],
@@ -99,12 +99,14 @@ export class LearnService {
             ],
             'module_id',
             'desc',
-        );
+        )).sort((a: UserStatus, b: UserStatus) => b.module_id - a.module_id);
     }
 
     private async loadCourse(): Promise<Course> {
         try {
-            this.course = await this.api.get('?get=learn_course', { course_id: this.courseId });
+            this.course = (await this.api.get('?get=learn_course', { course_id: this.courseId }));
+            // sort order ascending
+            this.course.modules = [...this.course.modules.sort((a, b) => a.order - b.order)];
         } catch (error) {
             console.error('Error: LearnService.loadCourse =>', error);
         }
@@ -121,19 +123,27 @@ export class LearnService {
         let chapterIndex: number = 0;
         let pageIndex: number = 0;
 
-        if (this.userStatus.length) {
+        if (this.userStatus.length > 0) {
             const currentStatus: UserStatus = this.userStatus.sort((a, b) => b.module_id - a.module_id)[0];
             const currentModuleId: number = currentStatus.module_id;
             moduleIndex = this.course.modules.findIndex(module => module.id === currentModuleId);
+
             chapterIndex = currentStatus.chapter_index;
             pageIndex = currentStatus.page_index;
 
-            console.log('setCurrentModuleAndChapterIndex',currentModuleId, moduleIndex, chapterIndex, pageIndex, currentStatus);
-
+            console.log(
+                'setCurrentModuleAndChapterIndex',
+                this.course,
+                currentModuleId,
+                moduleIndex,
+                chapterIndex,
+                pageIndex,
+                currentStatus
+            );
+        }
             this.currentModuleProgressionIndex = moduleIndex;
             this.currentChapterProgressionIndex = chapterIndex;
             this.currentPageProgressionIndex = pageIndex;
-        }
     }
 
     public getUserStatement(): UserStatement {
@@ -157,6 +167,8 @@ export class LearnService {
                 this.course.modules[courseModuleIndex] = module;
 
                 this.moduleIdLoaded.add(moduleId);
+
+                this.course.modules = this.course.modules.sort((a, b) => a.order - b.order);
             } catch (error) {
                 console.error(error);
             }
