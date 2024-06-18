@@ -24,6 +24,8 @@ import { PresentationComponent } from './in/large/tabs/presentation/presentation
 import { QAndAComponent } from './in/large/tabs/q-and-a/q-and-a.component';
 import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
 import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.component';
+import { CompletionDialogComponent } from './_components/completion-dialog/completion-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
     declarations: [
@@ -37,6 +39,7 @@ import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.
         QAndAComponent,
         ReviewsComponent,
         CourseNotFoundComponent,
+        CompletionDialogComponent,
     ],
     imports: [
         AppRoutingModule,
@@ -50,6 +53,7 @@ import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.
         MatExpansionModule,
         MatListModule,
         MatProgressSpinnerModule,
+        MatDialogModule,
     ],
     providers: [
         // add HTTP interceptor to inject AUTH header to any outgoing request

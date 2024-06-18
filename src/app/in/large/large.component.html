@@ -4,7 +4,9 @@
     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
     [currentPageProgressionIndex]="currentPageProgressionIndex"
     [appInfo]="appInfo"
-    [course]="course"></app-top-bar>
+    [course]="course"
+    (moduleFinished)="openModuleCompletionDialog()"
+></app-top-bar>
 <div class="body">
     <div class="side-bar">
         <div class="search" *ngIf="hasAccessToCourse">
@@ -31,6 +33,7 @@
                     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
                     [currentModuleProgressionIndex]="currentModuleProgressionIndex"
                     [currentPageProgressionIndex]="currentPageProgressionIndex"
+                    [currentNavigation]="currentNavigation"
                 ></app-content>
             </mat-tab>
             <mat-tab label="Presentation">

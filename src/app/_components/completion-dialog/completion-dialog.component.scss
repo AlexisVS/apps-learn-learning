@@ -1,0 +1,26 @@
+:host {
+    display: block;
+    max-width: 450px;
+    overflow: hidden;
+
+    .content {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+
+        img {
+            width: 60%;
+            height: auto;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: space-between;
+    }
+}

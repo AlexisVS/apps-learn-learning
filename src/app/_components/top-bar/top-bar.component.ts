@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { Chapter, Course, Module, UserStatement } from '../../_types/learn';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Chapter, Course, Module, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo } from '../../_types/equal';
 
 type TotalCourseProgress = {
@@ -20,6 +20,9 @@ export class TopBarComponent implements OnInit, OnChanges {
     @Input() public currentChapterProgressionIndex: number;
     @Input() public currentPageProgressionIndex: number;
 
+    /* Used for trigger de completion dialog */
+    @Output() public moduleFinished: EventEmitter<void> = new EventEmitter<void>();
+
     public currentModule: Module;
     public currentLesson: Chapter;
 
@@ -31,6 +34,7 @@ export class TopBarComponent implements OnInit, OnChanges {
 
     /* Used to display the current total course progression */
     public currentTotalCourseProgress: TotalCourseProgress = {} as TotalCourseProgress;
+
 
     ngOnInit(): void {
 
@@ -100,6 +104,7 @@ export class TopBarComponent implements OnInit, OnChanges {
         let currentChapterIndex: number = this.currentChapterProgressionIndex;
         if (moduleComplete) {
             currentChapterIndex = this.currentModule.chapters.length;
+            this.moduleFinished.emit();
         }
 
         const chapter_count: number = this.currentModule.chapters.length;
@@ -112,19 +117,45 @@ export class TopBarComponent implements OnInit, OnChanges {
         // current
         let activeModuleLessonsDuration: number = 0;
 
-        if (this.userStatement.userStatus
-            .filter(
-                userStatus => userStatus.module_id === this.currentModule.id &&
-                    userStatus.chapter_index > 0)
-        ) {
-            activeModuleLessonsDuration = this.currentModule.chapters
-                .filter(chapter => chapter.order < this.currentLesson.order)
-                .reduce((acc, chapter) => acc + chapter.duration, 0);
+        const userStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id);
 
-            if (this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id)?.is_complete) {
-                activeModuleLessonsDuration += this.currentLesson.duration;
+        if (this.userStatement.userStatus.length > 1) {
+            let moduleIdCompleted: Set<number> = new Set<number>();
+            let totalProgressDuration: number = 0;
+
+            // Get all completed modules
+            this.userStatement.userStatus.forEach(userStatus => {
+                if (userStatus.is_complete) {
+                    moduleIdCompleted.add(userStatus.module_id);
+                }
+            });
+
+            // Get the total chapters duration of all completed modules
+            moduleIdCompleted.forEach(moduleId => {
+                totalProgressDuration += this.course.modules
+                    ?.find(module => module.id === moduleId)?.chapters
+                    ?.reduce((acc, chapter) => acc + chapter.duration, 0) || 0;
+            });
+
+            // Get the current module duration
+            if (!userStatus?.is_complete) {
+                totalProgressDuration += this.currentModule.chapters
+                    .filter(chapter => chapter.order < this.currentLesson.order)
+                    .reduce((acc, chapter) => acc + chapter.duration, 0);
+            }
+
+            activeModuleLessonsDuration = totalProgressDuration;
+        } else {
+            if (userStatus?.is_complete) {
+                activeModuleLessonsDuration += this.currentModule.chapters
+                    .reduce((acc, chapter) => acc + chapter.duration, 0);
+            } else {
+                activeModuleLessonsDuration = this.currentModule.chapters
+                    .filter(chapter => chapter.order < this.currentLesson.order)
+                    .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
         }
+
         const currentTotalProgression: number = activeModuleLessonsDuration;
 
         // total
@@ -149,5 +180,8 @@ export class TopBarComponent implements OnInit, OnChanges {
         } else {
             return `${hours}h ${minutes}min`;
         }
+    }
+
+    public openNextModuleDialog(): void {
     }
 }
