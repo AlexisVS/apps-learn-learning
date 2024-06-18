@@ -35,6 +35,9 @@ export class TopBarComponent implements OnInit, OnChanges {
     /* Used to display the current total course progression */
     public currentTotalCourseProgress: TotalCourseProgress = {} as TotalCourseProgress;
 
+    /* Used for launch only one time the module complete overlay */
+    private hasLaunchTheOverlay: boolean = false;
+
 
     ngOnInit(): void {
 
@@ -60,11 +63,25 @@ export class TopBarComponent implements OnInit, OnChanges {
             console.table(changes.userStatement.currentValue);
         }
 
-        if (changes.hasOwnProperty('currentChapterProgressionIndex') && changes.currentChapterProgressionIndex.currentValue !== changes.currentChapterProgressionIndex.previousValue) {
+        if (
+            changes.hasOwnProperty('currentChapterProgressionIndex') &&
+            !changes.currentChapterProgressionIndex.isFirstChange() &&
+            changes.currentChapterProgressionIndex.currentValue !== changes.currentChapterProgressionIndex.previousValue
+        ) {
             this.computeCurrentLessonProgress();
+            this.moduleFinished.emit();
+
+            if (changes.currentChapterProgressionIndex.previousValue !== changes.currentChapterProgressionIndex.currentValue && changes.currentChapterProgressionIndex.currentValue === 0) {
+                this.hasLaunchTheOverlay = false;
+            }
         }
 
-        if (changes.hasOwnProperty('currentPageProgressionIndex') && changes.currentPageProgressionIndex.currentValue !== changes.currentPageProgressionIndex.previousValue) {
+
+        if (
+            changes.hasOwnProperty('currentPageProgressionIndex') &&
+            !changes.currentPageProgressionIndex.isFirstChange() &&
+            changes.currentPageProgressionIndex.currentValue !== changes.currentPageProgressionIndex.previousValue
+        ) {
             this.computeCurrentLessonProgress();
         }
     }
@@ -104,7 +121,11 @@ export class TopBarComponent implements OnInit, OnChanges {
         let currentChapterIndex: number = this.currentChapterProgressionIndex;
         if (moduleComplete) {
             currentChapterIndex = this.currentModule.chapters.length;
-            this.moduleFinished.emit();
+
+            if (!this.hasLaunchTheOverlay) {
+                this.moduleFinished.emit();
+                this.hasLaunchTheOverlay = true;
+            }
         }
 
         const chapter_count: number = this.currentModule.chapters.length;
@@ -182,6 +203,4 @@ export class TopBarComponent implements OnInit, OnChanges {
         }
     }
 
-    public openNextModuleDialog(): void {
-    }
 }

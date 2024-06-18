@@ -11,5 +11,6 @@
     [currentChapterProgressionIndex]="currentChapterProgressionIndex"
     [currentPageProgressionIndex]="currentPageProgressionIndex"
     (moduleAndChapterToLoad)="onModuleClick($event)"
+    (nextModuleEvent)="onNextModuleEvent($event)"
 ></app-large>
 <app-small *ngIf="device === 'small'"></app-small>

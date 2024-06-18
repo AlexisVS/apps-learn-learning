@@ -33,6 +33,20 @@ export class LearnService {
             await this.loadCourse();
             this.setDocumentTitle();
             this.setCurrentModuleAndChapterIndex();
+
+            // if the last user status is complete, we create a new one for the next module
+            if (this.userStatus.length > 0 && this.userStatus[0].is_complete) {
+                await this.api.create('learn\\UserStatus', {
+                    course_id: this.courseId,
+                    module_id: this.course.modules[this.currentModuleProgressionIndex + 1].id,
+                    user_id: this.userInfo.id,
+                    chapter_index: 0,
+                    page_index: 0,
+                    is_complete: false,
+                });
+
+                await this.loadUserStatus();
+            }
         } catch (error) {
             console.error('LearnService.loadRessources =>', error);
         }
@@ -138,12 +152,12 @@ export class LearnService {
                 moduleIndex,
                 chapterIndex,
                 pageIndex,
-                currentStatus
+                currentStatus,
             );
         }
-            this.currentModuleProgressionIndex = moduleIndex;
-            this.currentChapterProgressionIndex = chapterIndex;
-            this.currentPageProgressionIndex = pageIndex;
+        this.currentModuleProgressionIndex = moduleIndex;
+        this.currentChapterProgressionIndex = chapterIndex;
+        this.currentPageProgressionIndex = pageIndex;
     }
 
     public getUserStatement(): UserStatement {

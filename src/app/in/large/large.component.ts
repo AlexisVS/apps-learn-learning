@@ -31,6 +31,8 @@ export class LargeComponent {
         chapterId: number
     }>();
 
+    @Output() public nextModuleEvent: EventEmitter<{ module_id: number }> = new EventEmitter<{ module_id: number }>();
+
     public drawerState: DrawerState = 'inactive';
     public menuIcon: string = 'menu';
 
@@ -139,16 +141,16 @@ export class LargeComponent {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
+                const currentModuleId: number = this.course.modules[this.currentModuleProgressionIndex].id;
                 const nextModule: Module = this.course.modules[this.currentModuleProgressionIndex + 1];
                 const nextModuleId: number = nextModule.id;
                 const nextChapterId: number = nextModule.chapters.sort((a, b) => a.order - b.order)[0].id;
                 this.moduleAndChapterToLoad.emit({ moduleId: nextModuleId, chapterId: nextChapterId });
+                this.nextModuleEvent.emit({ module_id: currentModuleId });
 
                 this.currentModuleProgressionIndex = this.currentModuleProgressionIndex + 1;
-                this.currentChapterProgressionIndex = 0;
 
                 this.completionDialog.closeAll();
-
             }
             console.log('openModuleCompletionDialog => ', result);
         });

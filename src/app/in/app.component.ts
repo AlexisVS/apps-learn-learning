@@ -127,18 +127,22 @@ export class AppComponent implements OnInit {
                 break;
 
             case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
-                this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === qursusMessageEvent.data.module_id);
-
-                const next_course_id: number = this.course.modules[this.currentModuleProgressionIndex + 1].id;
-                this.course = await this.learnService.loadCourseModule(next_course_id);
-
-                await this.learnService.loadUserStatus();
-                this.userStatement.userStatus = this.learnService.userStatus;
-
-                this.currentChapterProgressionIndex = 0;
-                this.currentPageProgressionIndex = 0;
+                await this.handleModuleProgressionFinished(qursusMessageEvent.data.module_id);
                 break;
         }
+    }
+
+    private async handleModuleProgressionFinished(module_id: number): Promise<void> {
+        this.currentModuleProgressionIndex = this.course.modules.findIndex(module => module.id === module_id);
+
+        const next_course_id: number = this.course.modules[this.currentModuleProgressionIndex + 1].id;
+        this.course = await this.learnService.loadCourseModule(next_course_id);
+
+        await this.learnService.loadUserStatus();
+        this.userStatement.userStatus = this.learnService.userStatus;
+
+        this.currentChapterProgressionIndex = 0;
+        this.currentPageProgressionIndex = 0;
     }
 
     public async onModuleClick(data: { moduleId: number, chapterId: number }): Promise<void> {
@@ -151,5 +155,9 @@ export class AppComponent implements OnInit {
         // } else {
         //     lesson.starred = true;
         // }
+    }
+
+    public onNextModuleEvent(data: { module_id: number }): void {
+        this.handleModuleProgressionFinished(data.module_id);
     }
 }

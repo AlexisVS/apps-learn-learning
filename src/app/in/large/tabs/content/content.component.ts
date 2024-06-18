@@ -29,7 +29,7 @@ export class ContentComponent implements OnInit, OnChanges {
     ) {
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         let mode: 'view' | 'edit' = 'view';
 
         if (
@@ -46,7 +46,7 @@ export class ContentComponent implements OnInit, OnChanges {
         );
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
+    public ngOnChanges(changes: SimpleChanges): void {
         if (
             changes.hasOwnProperty('currentNavigation') &&
             changes.currentNavigation.currentValue !== null &&
@@ -65,6 +65,18 @@ export class ContentComponent implements OnInit, OnChanges {
                 this.currentNavigation?.chapter_index!,
                 0,
                 mode,
+            );
+        }
+
+        if (
+            changes.hasOwnProperty('currentModuleProgressionIndex') &&
+            changes.currentModuleProgressionIndex.currentValue !== changes.currentModuleProgressionIndex.previousValue
+        ) {
+            this.setQursusIframeUrl(
+                this.course.modules[this.currentModuleProgressionIndex].id,
+                0,
+                0,
+                'view',
             );
         }
     }
