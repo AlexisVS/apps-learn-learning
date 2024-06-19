@@ -152,3 +152,10 @@ export type UserStatement = {
     userInfo: Equal.UserInfo;
     userStatus: UserStatus[];
 };
+
+export type ProgressionIndex = {
+    module: number;
+    chapter: number;
+    page: number;
+
+};

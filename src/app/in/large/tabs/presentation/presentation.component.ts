@@ -7,11 +7,11 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     styleUrls: ['./presentation.component.scss'],
 })
 export class PresentationComponent {
-    @Input() courseDescription!: string;
+    @Input() course_description: string;
 
     public htmlContent: SafeHtml;
 
     constructor(private sanitizer: DomSanitizer) {
-        this.htmlContent = this.sanitizer.bypassSecurityTrustHtml(this.courseDescription);
+        this.htmlContent = this.sanitizer.bypassSecurityTrustHtml(this.course_description);
     }
 }

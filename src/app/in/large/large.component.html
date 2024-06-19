@@ -1,43 +1,42 @@
 <app-top-bar
     *ngIf="course && appInfo && environnementInfo && userStatement"
     [userStatement]="userStatement"
-    [currentChapterProgressionIndex]="currentChapterProgressionIndex"
-    [currentPageProgressionIndex]="currentPageProgressionIndex"
+    [current_chapter_progression_index]="current_chapter_progression_index"
+    [current_page_progression_index]="current_page_progression_index"
     [appInfo]="appInfo"
     [course]="course"
-    (moduleFinished)="openModuleCompletionDialog()"
 ></app-top-bar>
 <div class="body">
     <div class="side-bar">
-        <div class="search" *ngIf="hasAccessToCourse">
+        <div class="search" *ngIf="has_access_to_course">
             <mat-icon class="search-icon" matPrefix>search</mat-icon>
             <input type="search" />
         </div>
 
         <button #sideBarMenuButton *ngIf="course" mat-icon-button (click)="onDrawerButtonClick()">
-            <mat-icon>{{ menuIcon }}</mat-icon>
+            <mat-icon>{{ menu_icon }}</mat-icon>
         </button>
     </div>
 
-    <mat-spinner *ngIf="isLoading" class="spinner"></mat-spinner>
+    <mat-spinner *ngIf="is_loading" class="spinner"></mat-spinner>
 
     <div class="content">
-        <div class="no-content font-size-6" *ngIf="!hasAccessToCourse && !isLoading">
+        <div class="no-content font-size-6" *ngIf="!has_access_to_course && !is_loading">
             <span>You don't have access to course</span>
         </div>
-        <mat-tab-group *ngIf="hasAccessToCourse" [class]="drawerState === 'pinned' ? 'tab--pinned' : ''">
+        <mat-tab-group *ngIf="has_access_to_course" [class]="drawer_state === 'pinned' ? 'tab--pinned' : ''">
             <mat-tab id="matTabContent" label="Content">
                 <app-content
                     [appInfo]="appInfo"
                     [course]="course"
-                    [currentChapterProgressionIndex]="currentChapterProgressionIndex"
-                    [currentModuleProgressionIndex]="currentModuleProgressionIndex"
-                    [currentPageProgressionIndex]="currentPageProgressionIndex"
+                    [current_chapter_progression_index]="current_chapter_progression_index"
+                    [current_module_progression_index]="current_module_progression_index"
+                    [current_page_progression_index]="current_page_progression_index"
                     [currentNavigation]="currentNavigation"
                 ></app-content>
             </mat-tab>
             <mat-tab label="Presentation">
-                <app-presentation [courseDescription]="course.description"></app-presentation>
+                <app-presentation [course_description]="course.description"></app-presentation>
             </mat-tab>
             <!--            <mat-tab label="Questions and answers">-->
             <!--                <app-q-and-a></app-q-and-a>-->
@@ -49,14 +48,14 @@
             <!--            </mat-tab>-->
         </mat-tab-group>
 
-        <div #drawer class="drawer" [class]="drawerState">
+        <div #drawer class="drawer" [class]="drawer_state">
             <mat-accordion multi *ngIf="course">
                 <ng-container *ngFor="let module of course.modules; index as moduleIndex">
                     <mat-expansion-panel
                         class="module-panel"
-                        (opened)="selectedModuleIndex = moduleIndex"
-                        [expanded]="currentModuleProgressionIndex === moduleIndex"
-                        [class.current-progression]="currentModuleProgressionIndex === moduleIndex">
+                        (opened)="selected_module_index = moduleIndex"
+                        [expanded]="current_module_progression_index === moduleIndex"
+                        [class.current-progression]="current_module_progression_index === moduleIndex">
                         <mat-expansion-panel-header>
                             <mat-panel-title class="font-size--1">{{ module.title }}</mat-panel-title>
                             <mat-panel-description class="font-size--2">
@@ -72,7 +71,7 @@
                         <mat-selection-list [multiple]="false" *ngIf="module.chapters && module.chapters.length > 0">
                             <ng-container *ngFor="let chapter of module.chapters; index as chapterIndex">
                                 <mat-list-option
-                                    [class.selected]="currentModuleProgressionIndex === moduleIndex && currentChapterProgressionIndex === chapterIndex ? 'primary' : undefined"
+                                    [class.selected]="current_module_progression_index === moduleIndex && current_chapter_progression_index === chapterIndex ? 'primary' : undefined"
                                     *ngIf="chapter"
                                     [value]="chapter"
                                     class="item"

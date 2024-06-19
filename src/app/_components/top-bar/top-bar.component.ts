@@ -17,30 +17,59 @@ export class TopBarComponent implements OnInit, OnChanges {
     @Input() public userStatement: UserStatement;
     @Input() public course: Course;
     @Input() public appInfo: AppInfo;
-    @Input() public currentChapterProgressionIndex: number;
-    @Input() public currentPageProgressionIndex: number;
-
-    /* Used for trigger de completion dialog */
-    @Output() public moduleFinished: EventEmitter<void> = new EventEmitter<void>();
+    @Input() public current_chapter_progression_index: number;
+    @Input() public current_page_progression_index: number;
 
     public currentModule: Module;
     public currentLesson: Chapter;
 
     /* Used to display the current module progression */
-    public currentModuleProgress: string;
+    public current_module_progress: string;
 
     /* Used to display the current lesson progression */
-    public currentLessonProgress: string;
+    public current_lesson_progress: string;
 
     /* Used to display the current total course progression */
     public currentTotalCourseProgress: TotalCourseProgress = {} as TotalCourseProgress;
 
-    /* Used for launch only one time the module complete overlay */
-    private hasLaunchTheOverlay: boolean = false;
-
-
     ngOnInit(): void {
 
+        this.loadStats();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+
+        if (
+            (
+                changes.hasOwnProperty('userStatement') &&
+                !changes.userStatement.isFirstChange() &&
+                changes.userStatement.currentValue !== changes.userStatement.previousValue
+            ) || (
+                changes.hasOwnProperty('course') &&
+                !changes.course.isFirstChange() &&
+                changes.course.currentValue !== changes.course.previousValue
+            )
+        ) {
+            this.loadStats();
+        }
+
+        if (
+            (
+                changes.hasOwnProperty('current_chapter_progression_index') &&
+                !changes.current_chapter_progression_index.isFirstChange() &&
+                changes.current_chapter_progression_index.currentValue !== changes.current_chapter_progression_index.previousValue
+            ) || (
+                changes.hasOwnProperty('current_page_progression_index') &&
+                !changes.current_page_progression_index.isFirstChange() &&
+                changes.current_page_progression_index.currentValue !== changes.current_page_progression_index.previousValue
+            )
+        ) {
+            // this.computeCurrentLessonProgress();
+            this.loadStats();
+        }
+    }
+
+    private loadStats(): void {
         if (this.course.modules && this.course.modules.length > 0) {
             this.currentModule = this.getCurrentModule();
 
@@ -53,96 +82,58 @@ export class TopBarComponent implements OnInit, OnChanges {
         }
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-
-        if (
-            (changes.hasOwnProperty('userStatement') && changes.userStatement.currentValue !== changes.userStatement.previousValue) ||
-            (changes.hasOwnProperty('course') && changes.course.currentValue !== changes.course.previousValue)
-        ) {
-            this.ngOnInit();
-            console.table(changes.userStatement.currentValue);
-        }
-
-        if (
-            changes.hasOwnProperty('currentChapterProgressionIndex') &&
-            !changes.currentChapterProgressionIndex.isFirstChange() &&
-            changes.currentChapterProgressionIndex.currentValue !== changes.currentChapterProgressionIndex.previousValue
-        ) {
-            this.computeCurrentLessonProgress();
-            this.moduleFinished.emit();
-
-            if (changes.currentChapterProgressionIndex.previousValue !== changes.currentChapterProgressionIndex.currentValue && changes.currentChapterProgressionIndex.currentValue === 0) {
-                this.hasLaunchTheOverlay = false;
-            }
-        }
-
-
-        if (
-            changes.hasOwnProperty('currentPageProgressionIndex') &&
-            !changes.currentPageProgressionIndex.isFirstChange() &&
-            changes.currentPageProgressionIndex.currentValue !== changes.currentPageProgressionIndex.previousValue
-        ) {
-            this.computeCurrentLessonProgress();
-        }
-    }
-
     public getCurrentModule(): Module {
-        let moduleIndex: number = 0;
+        let module_index: number = 0;
 
         if (this.userStatement.userStatus.length > 0) {
-            const currentModuleId: number = this.userStatement.userStatus[0].module_id;
+            const current_module_id: number = this.userStatement.userStatus[0].module_id;
 
-            moduleIndex = this.course.modules.findIndex(module => module.id === currentModuleId);
+            module_index = this.course.modules.findIndex(module => module.id === current_module_id);
         }
 
-        return this.course.modules[moduleIndex];
+        return this.course.modules[module_index];
     }
 
     public getCurrentLesson(): Chapter {
-        return this.currentModule.chapters[this.currentChapterProgressionIndex];
+        return this.currentModule.chapters[this.current_chapter_progression_index];
     }
 
     public computeCurrentModuleProgress(): void {
-        let moduleProgress: number = 0;
+        let module_progress: number = 0;
 
         if (this.userStatement.userStatus.length > 0) {
-            moduleProgress = this.userStatement.userStatus.length - 1;
+            module_progress = this.userStatement.userStatus.length - 1;
 
             if (this.userStatement.userStatus[0].is_complete) {
-                moduleProgress += 1;
+                module_progress += 1;
             }
         }
 
-        this.currentModuleProgress = `${moduleProgress} / ${this.course.modules.length} - ${this.computeDuration(this.currentModule.duration)}`;
+        this.current_module_progress = `${module_progress} / ${this.course.modules.length} - ${this.computeDuration(this.currentModule.duration)}`;
     }
 
     public computeCurrentLessonProgress(): void {
-        const moduleComplete: boolean = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id)?.is_complete == true;
-        let currentChapterIndex: number = this.currentChapterProgressionIndex;
-        if (moduleComplete) {
-            currentChapterIndex = this.currentModule.chapters.length;
-
-            if (!this.hasLaunchTheOverlay) {
-                this.moduleFinished.emit();
-                this.hasLaunchTheOverlay = true;
-            }
+        const module_complete: boolean = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id)?.is_complete == true;
+        let current_chapter_index: number = this.current_chapter_progression_index;
+        if (module_complete) {
+            current_chapter_index = this.currentModule.chapters.length;
         }
 
         const chapter_count: number = this.currentModule.chapters.length;
         const page_count: number = this.currentLesson.page_count;
 
-        this.currentLessonProgress = `${currentChapterIndex} / ${chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${page_count + 'p'}`;
+        this.current_lesson_progress = `${current_chapter_index} / ${chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${page_count + 'p'}`;
     }
 
     public computeProgressTotalStats(): void {
         // current
-        let activeModuleLessonsDuration: number = 0;
+        let active_module_lessons_duration: number = 0;
 
         const userStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id);
 
         if (this.userStatement.userStatus.length > 1) {
             let moduleIdCompleted: Set<number> = new Set<number>();
-            let totalProgressDuration: number = 0;
+            let total_progress_duration: number = 0;
 
             // Get all completed modules
             this.userStatement.userStatus.forEach(userStatus => {
@@ -153,42 +144,42 @@ export class TopBarComponent implements OnInit, OnChanges {
 
             // Get the total chapters duration of all completed modules
             moduleIdCompleted.forEach(moduleId => {
-                totalProgressDuration += this.course.modules
+                total_progress_duration += this.course.modules
                     ?.find(module => module.id === moduleId)?.chapters
                     ?.reduce((acc, chapter) => acc + chapter.duration, 0) || 0;
             });
 
             // Get the current module duration
             if (!userStatus?.is_complete) {
-                totalProgressDuration += this.currentModule.chapters
+                total_progress_duration += this.currentModule.chapters
                     .filter(chapter => chapter.order < this.currentLesson.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
 
-            activeModuleLessonsDuration = totalProgressDuration;
+            active_module_lessons_duration = total_progress_duration;
         } else {
             if (userStatus?.is_complete) {
-                activeModuleLessonsDuration += this.currentModule.chapters
+                active_module_lessons_duration += this.currentModule.chapters
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             } else {
-                activeModuleLessonsDuration = this.currentModule.chapters
+                active_module_lessons_duration = this.currentModule.chapters
                     .filter(chapter => chapter.order < this.currentLesson.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
         }
 
-        const currentTotalProgression: number = activeModuleLessonsDuration;
+        const current_total_progression: number = active_module_lessons_duration;
 
         // total
-        const totalCourseDuration: number = this.course.modules.reduce((acc, module) => acc + module.duration, 0);
+        const total_course_duration: number = this.course.modules.reduce((acc, module) => acc + module.duration, 0);
 
         // currentPercentage
-        const currentPourcentage: number = (currentTotalProgression / totalCourseDuration) * 100;
+        const current_pourcentage: number = (current_total_progression / total_course_duration) * 100;
 
         this.currentTotalCourseProgress = {
-            current: this.computeDuration(currentTotalProgression),
-            total: this.computeDuration(totalCourseDuration),
-            currentPourcentage: `${currentPourcentage.toFixed()}`,
+            current: this.computeDuration(current_total_progression),
+            total: this.computeDuration(total_course_duration),
+            currentPourcentage: `${current_pourcentage.toFixed()}`,
         };
     }
 
@@ -202,5 +193,4 @@ export class TopBarComponent implements OnInit, OnChanges {
             return `${hours}h ${minutes}min`;
         }
     }
-
 }

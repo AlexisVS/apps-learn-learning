@@ -13,9 +13,9 @@ import { AppInfo } from '../../../../_types/equal';
 export class ContentComponent implements OnInit, OnChanges {
     @Input() public appInfo: AppInfo;
     @Input() public course: Course;
-    @Input() public currentModuleProgressionIndex: number;
-    @Input() public currentChapterProgressionIndex: number;
-    @Input() public currentPageProgressionIndex: number;
+    @Input() public current_module_progression_index: number;
+    @Input() public current_chapter_progression_index: number;
+    @Input() public current_page_progression_index: number;
 
     /** Used for navigation between modules and chapters */
     @Input() public currentNavigation: { module_id: number; chapter_index: number } | null;
@@ -39,9 +39,9 @@ export class ContentComponent implements OnInit, OnChanges {
             mode = 'edit';
         }
         this.setQursusIframeUrl(
-            this.course.modules[this.currentModuleProgressionIndex].id,
-            this.currentChapterProgressionIndex,
-            this.currentPageProgressionIndex,
+            this.course.modules[this.current_module_progression_index].id,
+            this.current_chapter_progression_index,
+            this.current_page_progression_index,
             mode,
         );
     }
@@ -69,11 +69,11 @@ export class ContentComponent implements OnInit, OnChanges {
         }
 
         if (
-            changes.hasOwnProperty('currentModuleProgressionIndex') &&
-            changes.currentModuleProgressionIndex.currentValue !== changes.currentModuleProgressionIndex.previousValue
+            changes.hasOwnProperty('current_module_progression_index') &&
+            changes.current_module_progression_index.currentValue !== changes.current_module_progression_index.previousValue
         ) {
             this.setQursusIframeUrl(
-                this.course.modules[this.currentModuleProgressionIndex].id,
+                this.course.modules[this.current_module_progression_index].id,
                 0,
                 0,
                 'view',
@@ -81,11 +81,11 @@ export class ContentComponent implements OnInit, OnChanges {
         }
     }
 
-    private setQursusIframeUrl(moduleId: number, chapterIndex: number, pageIndex: number = 0, mode: 'view' | 'edit'): void {
+    private setQursusIframeUrl(module_id: number, chapter_index: number, page_index: number = 0, mode: 'view' | 'edit'): void {
         const base_url: string = this.appInfo.backend_url + '/qursus';
-        let query_string: string = '?module=' + moduleId;
-        query_string += '&chapter=' + chapterIndex;
-        query_string += '&page=' + pageIndex;
+        let query_string: string = '?module=' + module_id;
+        query_string += '&chapter=' + chapter_index;
+        query_string += '&page=' + page_index;
 
         if (
             mode === 'edit' &&

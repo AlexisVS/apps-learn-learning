@@ -1,9 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
-import { Course, Module, UserStatement } from '../../_types/learn';
+import { Course, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../../_types/equal';
-import { MatDialog } from '@angular/material/dialog';
-import { CompletionDialogComponent } from '../../_components/completion-dialog/completion-dialog.component';
 
 type DrawerState = 'inactive' | 'active' | 'pinned';
 
@@ -20,30 +18,27 @@ export class LargeComponent {
     @Input() public environnementInfo: EnvironmentInfo;
     @Input() public appInfo: AppInfo;
     @Input() public course: Course;
-    @Input() public hasAccessToCourse: boolean;
-    @Input() public isLoading: boolean;
-    @Input() public currentModuleProgressionIndex: number;
-    @Input() public currentChapterProgressionIndex: number;
-    @Input() public currentPageProgressionIndex: number;
+    @Input() public has_access_to_course: boolean;
+    @Input() public is_loading: boolean;
+    @Input() public current_module_progression_index: number;
+    @Input() public current_chapter_progression_index: number;
+    @Input() public current_page_progression_index: number;
 
-    @Output() public moduleAndChapterToLoad: EventEmitter<{ moduleId: number, chapterId: number }> = new EventEmitter<{
-        moduleId: number,
-        chapterId: number
+    @Output() public moduleAndChapterToLoad: EventEmitter<{ module_id: number, chapter_id: number }> = new EventEmitter<{
+        module_id: number,
+        chapter_id: number
     }>();
 
-    @Output() public nextModuleEvent: EventEmitter<{ module_id: number }> = new EventEmitter<{ module_id: number }>();
-
-    public drawerState: DrawerState = 'inactive';
-    public menuIcon: string = 'menu';
+    public drawer_state: DrawerState = 'inactive';
+    public menu_icon: string = 'menu';
 
     /** Used for drawer open/close state and drawer chapter selection */
-    public selectedModuleIndex: number = 0;
+    public selected_module_index: number = 0;
 
     /** Used for drawer chapter selection */
     public currentNavigation: { module_id: number, chapter_index: number } | null = null;
 
     constructor(
-        public completionDialog: MatDialog,
     ) {
         this.onClickOutsideActiveStateDrawer();
         this.qursusIframeClickedInside();
@@ -55,9 +50,9 @@ export class LargeComponent {
             // get the scheme + domain of the navigator
             const url: URL = new URL(window.location.href);
 
-            if (event.origin === url.origin && this.drawerState === 'active') {
-                this.drawerState = 'inactive';
-                this.menuIcon = 'menu';
+            if (event.origin === url.origin && this.drawer_state === 'active') {
+                this.drawer_state = 'inactive';
+                this.menu_icon = 'menu';
             }
         });
     }
@@ -65,30 +60,30 @@ export class LargeComponent {
     private onClickOutsideActiveStateDrawer(): void {
         window.addEventListener('click', (event: MouseEvent): void => {
             if (
-                this.drawerState === 'active' &&
+                this.drawer_state === 'active' &&
                 !this.sideBarMenuButton._elementRef.nativeElement.contains(event.target as Node)
             ) {
                 if (!this.drawer.nativeElement.contains(event.target as Node)) {
-                    this.drawerState = 'inactive';
-                    this.menuIcon = 'menu';
+                    this.drawer_state = 'inactive';
+                    this.menu_icon = 'menu';
                 }
             }
         });
     }
 
     public onDrawerButtonClick(): void {
-        switch (this.drawerState) {
+        switch (this.drawer_state) {
             case 'inactive':
-                this.drawerState = 'active';
-                this.menuIcon = 'push_pin';
+                this.drawer_state = 'active';
+                this.menu_icon = 'push_pin';
                 break;
             case 'active':
-                this.drawerState = 'pinned';
-                this.menuIcon = 'close';
+                this.drawer_state = 'pinned';
+                this.menu_icon = 'close';
                 break;
             case 'pinned':
-                this.drawerState = 'inactive';
-                this.menuIcon = 'menu';
+                this.drawer_state = 'inactive';
+                this.menu_icon = 'menu';
                 break;
         }
     }
@@ -104,56 +99,34 @@ export class LargeComponent {
         }
     }
 
-    public getUserStatusChapterIndex(moduleId: number): number {
-        const chapterStatus = this.userStatement.userStatus.find(userStatus => userStatus.module_id === moduleId);
+    public getUserStatusChapterIndex(module_id: number): number {
+        const chapterStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === module_id);
 
-        let chapterIndex = 0;
+        let chapter_index: number = 0;
 
         if (chapterStatus) {
-            chapterIndex = chapterStatus.chapter_index;
+            chapter_index = chapterStatus.chapter_index;
 
             if (chapterStatus?.is_complete) {
-                const moduleIndex: number = this.course.modules.findIndex(module => module.id === moduleId);
-                chapterIndex = this.course.modules[moduleIndex].chapters.length;
+                const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
+                chapter_index = this.course.modules[module_index].chapters.length;
             }
         }
 
-        return chapterIndex;
+        return chapter_index;
     }
 
-    public async onClickChapter(moduleId: number, chapterId: number): Promise<void> {
-        this.moduleAndChapterToLoad.emit({ moduleId, chapterId });
-        const moduleIndex: number = this.course.modules.findIndex(module => module.id === moduleId);
-        const chapterIndex: number = this.course.modules[moduleIndex].chapters.findIndex(chapter => chapter.id === chapterId);
+    public async onClickChapter(module_id: number, chapter_id: number): Promise<void> {
+        this.moduleAndChapterToLoad.emit({ module_id: module_id, chapter_id: chapter_id });
+        const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
+        const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-        if (moduleIndex === this.currentModuleProgressionIndex && chapterIndex === this.currentChapterProgressionIndex) {
+        if (module_index === this.current_module_progression_index && chapter_index === this.current_chapter_progression_index) {
             this.currentNavigation = null;
         }
 
-        this.currentNavigation = { module_id: moduleId, chapter_index: chapterIndex };
+        this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
     }
 
-    public openModuleCompletionDialog(): void {
-        this.completionDialog.closeAll();
-        const dialogRef = this.completionDialog.open(CompletionDialogComponent, {
-            data: { next: false },
-        });
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                const currentModuleId: number = this.course.modules[this.currentModuleProgressionIndex].id;
-                const nextModule: Module = this.course.modules[this.currentModuleProgressionIndex + 1];
-                const nextModuleId: number = nextModule.id;
-                const nextChapterId: number = nextModule.chapters.sort((a, b) => a.order - b.order)[0].id;
-                this.moduleAndChapterToLoad.emit({ moduleId: nextModuleId, chapterId: nextChapterId });
-                this.nextModuleEvent.emit({ module_id: currentModuleId });
-
-                this.currentModuleProgressionIndex = this.currentModuleProgressionIndex + 1;
-
-                this.completionDialog.closeAll();
-            }
-            console.log('openModuleCompletionDialog => ', result);
-        });
-
-    }
 }
