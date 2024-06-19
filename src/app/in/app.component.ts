@@ -33,6 +33,7 @@ export class AppComponent implements OnInit {
     public appInfo: AppInfo;
 
     public course: Course;
+    public module: Module;
     public has_access_to_course: boolean = false;
     public is_loading: boolean = true;
 
@@ -70,9 +71,12 @@ export class AppComponent implements OnInit {
         this.course = this.learnService.course;
 
         if (this.course) {
+            this.module = this.course.modules[this.learnService.currentProgressionIndex.module];
+
             this.current_module_progression_index = this.learnService.currentProgressionIndex.module;
             this.current_chapter_progression_index = this.learnService.currentProgressionIndex.chapter;
             this.current_page_progression_index = this.learnService.currentProgressionIndex.page;
+
             this.has_access_to_course = true;
             this.is_loading = false;
         } else {
@@ -197,6 +201,8 @@ export class AppComponent implements OnInit {
 
                 await this.learnService.loadUserStatus();
                 this.userStatement = this.learnService.getUserStatement();
+
+                this.module = this.course.modules[next_module_index];
 
                 this.current_module_progression_index = next_module_index;
                 this.current_chapter_progression_index = 0;

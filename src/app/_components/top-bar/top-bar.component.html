@@ -3,14 +3,14 @@
         <img [src]="appInfo.backend_url + appInfo.app_logo_url" alt="" />
     </div>
 
-    <div class="informations" [style.align-items]="!currentLesson || !currentModule ? 'flex-start' : ''">
+    <div class="informations" [style.align-items]="!currentLesson || !module ? 'flex-start' : ''">
         <div class="course">
             <div class="font-size-3 name">{{ course.title }}</div>
 
-            <div class="breadcrumb" *ngIf="currentModule && currentLesson">
+            <div class="breadcrumb" *ngIf="module && currentLesson">
                 <!-- Module -->
                 <div class="part">
-                    <span class="font-size-0 label">{{ currentModule.title }}</span>
+                    <span class="font-size-0 label">{{ module.title }}</span>
                     <span class="font-size--3 progress">{{ current_module_progress }}</span>
                 </div>
 
@@ -33,10 +33,10 @@
                     [value]="currentTotalCourseProgress.currentPourcentage">
                 </mat-progress-spinner>
                 <span class="font-size-2 percentage">{{
-                    currentTotalCourseProgress.currentPourcentage
-                        ? currentTotalCourseProgress.currentPourcentage + '%'
-                        : ''
-                }}</span>
+                        currentTotalCourseProgress.currentPourcentage
+                            ? currentTotalCourseProgress.currentPourcentage + '%'
+                            : ''
+                    }}</span>
             </div>
 
             <div class="text">

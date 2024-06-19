@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
-import { Course, UserStatement, UserStatus } from '../../_types/learn';
+import { Course, Module, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../../_types/equal';
 
 type DrawerState = 'inactive' | 'active' | 'pinned';
@@ -18,6 +18,7 @@ export class LargeComponent {
     @Input() public environnementInfo: EnvironmentInfo;
     @Input() public appInfo: AppInfo;
     @Input() public course: Course;
+    @Input() public module: Module;
     @Input() public has_access_to_course: boolean;
     @Input() public is_loading: boolean;
     @Input() public current_module_progression_index: number;

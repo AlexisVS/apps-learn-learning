@@ -16,11 +16,12 @@ type TotalCourseProgress = {
 export class TopBarComponent implements OnInit, OnChanges {
     @Input() public userStatement: UserStatement;
     @Input() public course: Course;
+    @Input() public module: Module;
     @Input() public appInfo: AppInfo;
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
 
-    public currentModule: Module;
+    // public currentModule: Module;
     public currentLesson: Chapter;
 
     /* Used to display the current module progression */
@@ -39,22 +40,20 @@ export class TopBarComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
 
-        if (
-            (
-                changes.hasOwnProperty('userStatement') &&
-                !changes.userStatement.isFirstChange() &&
-                changes.userStatement.currentValue !== changes.userStatement.previousValue
-            ) || (
-                changes.hasOwnProperty('course') &&
-                !changes.course.isFirstChange() &&
-                changes.course.currentValue !== changes.course.previousValue
-            )
-        ) {
-            this.loadStats();
-        }
+        // if (
+        //
+        // ) {
+        //     this.loadStats();
+        // }
 
         if (
             (
+                changes.hasOwnProperty('userStatement') &&
+                changes.userStatement.currentValue !== changes.userStatement.previousValue
+            ) || (
+                changes.hasOwnProperty('course') &&
+                changes.course.currentValue !== changes.course.previousValue
+            ) || (
                 changes.hasOwnProperty('current_chapter_progression_index') &&
                 !changes.current_chapter_progression_index.isFirstChange() &&
                 changes.current_chapter_progression_index.currentValue !== changes.current_chapter_progression_index.previousValue
@@ -71,9 +70,9 @@ export class TopBarComponent implements OnInit, OnChanges {
 
     private loadStats(): void {
         if (this.course.modules && this.course.modules.length > 0) {
-            this.currentModule = this.getCurrentModule();
+            // this.currentModule = this.getCurrentModule();
 
-            if (this.currentModule && this.currentModule.chapters && this.currentModule.chapters.length > 0) {
+            if (this.module && this.module.chapters && this.module.chapters.length > 0) {
                 this.currentLesson = this.getCurrentLesson();
                 this.computeCurrentModuleProgress();
                 this.computeCurrentLessonProgress();
@@ -82,20 +81,20 @@ export class TopBarComponent implements OnInit, OnChanges {
         }
     }
 
-    public getCurrentModule(): Module {
-        let module_index: number = 0;
-
-        if (this.userStatement.userStatus.length > 0) {
-            const current_module_id: number = this.userStatement.userStatus[0].module_id;
-
-            module_index = this.course.modules.findIndex(module => module.id === current_module_id);
-        }
-
-        return this.course.modules[module_index];
-    }
+    // public getCurrentModule(): Module {
+    //     let module_index: number = 0;
+    //
+    //     if (this.userStatement.userStatus.length > 0) {
+    //         const current_module_id: number = this.userStatement.userStatus[0].module_id;
+    //
+    //         module_index = this.course.modules.findIndex(module => module.id === current_module_id);
+    //     }
+    //
+    //     return this.course.modules[module_index];
+    // }
 
     public getCurrentLesson(): Chapter {
-        return this.currentModule.chapters[this.current_chapter_progression_index];
+        return this.module.chapters[this.current_chapter_progression_index];
     }
 
     public computeCurrentModuleProgress(): void {
@@ -109,17 +108,17 @@ export class TopBarComponent implements OnInit, OnChanges {
             }
         }
 
-        this.current_module_progress = `${module_progress} / ${this.course.modules.length} - ${this.computeDuration(this.currentModule.duration)}`;
+        this.current_module_progress = `${module_progress} / ${this.course.modules.length} - ${this.computeDuration(this.module.duration)}`;
     }
 
     public computeCurrentLessonProgress(): void {
-        const module_complete: boolean = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id)?.is_complete == true;
+        const module_complete: boolean = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.module.id)?.is_complete == true;
         let current_chapter_index: number = this.current_chapter_progression_index;
         if (module_complete) {
-            current_chapter_index = this.currentModule.chapters.length;
+            current_chapter_index = this.module.chapters.length;
         }
 
-        const chapter_count: number = this.currentModule.chapters.length;
+        const chapter_count: number = this.module.chapters.length;
         const page_count: number = this.currentLesson.page_count;
 
         this.current_lesson_progress = `${current_chapter_index} / ${chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${page_count + 'p'}`;
@@ -129,7 +128,7 @@ export class TopBarComponent implements OnInit, OnChanges {
         // current
         let active_module_lessons_duration: number = 0;
 
-        const userStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.currentModule.id);
+        const userStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.module.id);
 
         if (this.userStatement.userStatus.length > 1) {
             let moduleIdCompleted: Set<number> = new Set<number>();
@@ -151,7 +150,7 @@ export class TopBarComponent implements OnInit, OnChanges {
 
             // Get the current module duration
             if (!userStatus?.is_complete) {
-                total_progress_duration += this.currentModule.chapters
+                total_progress_duration += this.module.chapters
                     .filter(chapter => chapter.order < this.currentLesson.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
@@ -159,10 +158,10 @@ export class TopBarComponent implements OnInit, OnChanges {
             active_module_lessons_duration = total_progress_duration;
         } else {
             if (userStatus?.is_complete) {
-                active_module_lessons_duration += this.currentModule.chapters
+                active_module_lessons_duration += this.module.chapters
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             } else {
-                active_module_lessons_duration = this.currentModule.chapters
+                active_module_lessons_duration = this.module.chapters
                     .filter(chapter => chapter.order < this.currentLesson.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
