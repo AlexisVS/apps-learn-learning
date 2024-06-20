@@ -34,25 +34,25 @@ export class TopBarComponent implements OnInit, OnChanges {
     public currentTotalCourseProgress: TotalCourseProgress = {} as TotalCourseProgress;
 
     ngOnInit(): void {
-
+        console.log('TopBarComponent.ngOnInit');
         this.loadStats();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-
-        // if (
-        //
-        // ) {
-        //     this.loadStats();
-        // }
-
+        console.table(changes);
         if (
             (
                 changes.hasOwnProperty('userStatement') &&
+                !changes.userStatement.isFirstChange() &&
                 changes.userStatement.currentValue !== changes.userStatement.previousValue
             ) || (
                 changes.hasOwnProperty('course') &&
+                !changes.course.isFirstChange() &&
                 changes.course.currentValue !== changes.course.previousValue
+            ) ||  (
+                changes.hasOwnProperty('module') &&
+                !changes.module.isFirstChange() &&
+                changes.module.currentValue !== changes.course.previousValue
             ) || (
                 changes.hasOwnProperty('current_chapter_progression_index') &&
                 !changes.current_chapter_progression_index.isFirstChange() &&
@@ -63,7 +63,6 @@ export class TopBarComponent implements OnInit, OnChanges {
                 changes.current_page_progression_index.currentValue !== changes.current_page_progression_index.previousValue
             )
         ) {
-            // this.computeCurrentLessonProgress();
             this.loadStats();
         }
     }
@@ -130,6 +129,10 @@ export class TopBarComponent implements OnInit, OnChanges {
 
         const userStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === this.module.id);
 
+        if (userStatus === undefined && this.currentTotalCourseProgress.currentPourcentage !== undefined) {
+            return;
+        }
+
         if (this.userStatement.userStatus.length > 1) {
             let moduleIdCompleted: Set<number> = new Set<number>();
             let total_progress_duration: number = 0;
@@ -142,9 +145,9 @@ export class TopBarComponent implements OnInit, OnChanges {
             });
 
             // Get the total chapters duration of all completed modules
-            moduleIdCompleted.forEach(moduleId => {
+            moduleIdCompleted.forEach(module_id => {
                 total_progress_duration += this.course.modules
-                    ?.find(module => module.id === moduleId)?.chapters
+                    ?.find(module => module.id === module_id)?.chapters
                     ?.reduce((acc, chapter) => acc + chapter.duration, 0) || 0;
             });
 
@@ -166,6 +169,12 @@ export class TopBarComponent implements OnInit, OnChanges {
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
         }
+
+        console.table({
+            name: 'computeProgressTotalStats',
+            userStatusAreAllComplete: this.userStatement.userStatus.every(userStatus => userStatus.is_complete),
+            userStatus: this.userStatement.userStatus,
+        });
 
         const current_total_progression: number = active_module_lessons_duration;
 

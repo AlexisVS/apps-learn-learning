@@ -107,6 +107,9 @@ export class AppComponent implements OnInit {
      * Handle the Qursus iframe
      */
     private async handleQursusIframeEvent(event: QursusMessageEvent): Promise<void> {
+        await this.learnService.loadUserStatus();
+        this.userStatement = this.learnService.getUserStatement();
+
         switch (event.type) {
             case MessageEventEnum.CHAPTER_REMOVED:
                 this.learnService.removeChapter(
@@ -128,15 +131,9 @@ export class AppComponent implements OnInit {
                 this.learnService.currentProgressionIndex.chapter = event.data.chapter_index;
                 this.current_chapter_progression_index = event.data.chapter_index;
 
-                await this.learnService.loadUserStatus();
-                this.userStatement = this.learnService.getUserStatement();
                 break;
 
-
             case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
-                await this.learnService.loadUserStatus();
-                this.userStatement.userStatus = this.learnService.userStatus;
-
                 let chapter_index: number = event.data.chapter_index;
 
                 if (this.course.modules[this.current_module_progression_index].chapters[chapter_index + 1]) {
@@ -156,12 +153,19 @@ export class AppComponent implements OnInit {
                 const module_index: number = this.course.modules.findIndex(module => module.id === event.data.module_id);
                 const next_module: Module = this.course.modules[module_index + 1];
 
+                const userStatus = [...this.userStatement.userStatus].map(userStatus => ({
+                    ...userStatus,
+                    is_complete: true,
+                }));
+
+                this.userStatement = {
+                    ...this.userStatement,
+                    userStatus,
+                };
+
                 if (!next_module) {
                     return;
                 }
-
-                await this.learnService.loadUserStatus();
-                this.userStatement.userStatus = this.learnService.userStatus;
 
                 this.course = await this.learnService.loadCourseModule(next_module.id);
 
