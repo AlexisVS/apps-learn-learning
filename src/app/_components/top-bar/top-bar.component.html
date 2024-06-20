@@ -8,21 +8,22 @@
             <div class="font-size-3 name">{{ course.title }}</div>
 
             <div class="breadcrumb" *ngIf="module && currentLesson">
+
                 <!-- Module -->
                 <div class="part">
                     <span class="font-size-0 label">{{ module.title }}</span>
-                    <span class="font-size--3 progress">{{ current_module_progress }}</span>
+                    <span *ngIf="mode === 'view'" class="font-size--3 progress">{{ current_module_progress }}</span>
                 </div>
 
                 <!-- Chapter -->
                 <div class="part">
                     <span class="font-size-0 label">{{ currentLesson.title }}</span>
-                    <span class="font-size--3 progress">{{ current_lesson_progress }}</span>
+                    <span *ngIf="mode === 'view'" class="font-size--3 progress">{{ current_lesson_progress }}</span>
                 </div>
             </div>
         </div>
 
-        <div class="progression" *ngIf="currentTotalCourseProgress">
+        <div class="progression" *ngIf="currentTotalCourseProgress && mode === 'view'">
             <div class="chart">
                 <mat-progress-spinner [diameter]="75" class="background" [mode]="'determinate'" [value]="100">
                 </mat-progress-spinner>

@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Course } from '../../../../_types/learn';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
 import { LearnService } from '../../../../_services/Learn.service';
 import { AppInfo } from '../../../../_types/equal';
 
@@ -16,6 +15,7 @@ export class ContentComponent implements OnInit, OnChanges {
     @Input() public current_module_progression_index: number;
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
+    @Input() public mode: 'view' | 'edit';
 
     /** Used for navigation between modules and chapters */
     @Input() public currentNavigation: { module_id: number; chapter_index: number } | null;
@@ -23,26 +23,17 @@ export class ContentComponent implements OnInit, OnChanges {
     public qursusUrl: SafeResourceUrl;
 
     constructor(
-        private route: ActivatedRoute,
         private learnService: LearnService,
         private sanitizer: DomSanitizer,
     ) {
     }
 
     public ngOnInit(): void {
-        let mode: 'view' | 'edit' = 'view';
-
-        if (
-            this.route.snapshot.queryParamMap.has('mode') &&
-            this.route.snapshot.queryParamMap.get('mode') === 'edit'
-        ) {
-            mode = 'edit';
-        }
         this.setQursusIframeUrl(
             this.course.modules[this.current_module_progression_index].id,
             this.current_chapter_progression_index,
             this.current_page_progression_index,
-            mode,
+            this.mode,
         );
     }
 
@@ -52,19 +43,11 @@ export class ContentComponent implements OnInit, OnChanges {
             changes.currentNavigation.currentValue !== null &&
             changes.currentNavigation.currentValue !== changes.currentNavigation.previousValue
         ) {
-            let mode: 'view' | 'edit' = 'view';
-
-            if (
-                this.route.snapshot.queryParamMap.has('mode') &&
-                this.route.snapshot.queryParamMap.get('mode') === 'edit'
-            ) {
-                mode = 'edit';
-            }
             this.setQursusIframeUrl(
                 this.currentNavigation?.module_id!,
                 this.currentNavigation?.chapter_index!,
                 0,
-                mode,
+                this.mode,
             );
         }
 
@@ -79,6 +62,18 @@ export class ContentComponent implements OnInit, OnChanges {
                 'view',
             );
         }
+
+        if (
+            changes.hasOwnProperty('mode') &&
+            changes.mode.currentValue !== changes.mode.previousValue
+        ) {
+            this.setQursusIframeUrl(
+                this.course.modules[this.current_module_progression_index].id,
+                this.current_chapter_progression_index,
+                this.current_page_progression_index,
+                this.mode,
+            );
+        }
     }
 
     private setQursusIframeUrl(module_id: number, chapter_index: number, page_index: number = 0, mode: 'view' | 'edit'): void {
@@ -91,6 +86,7 @@ export class ContentComponent implements OnInit, OnChanges {
             mode === 'edit' &&
             this.learnService.userHasAccessToCourseEditMode()
         ) {
+            console.log('userHasAccessToCourseEditMode');
             query_string += '&mode=edit';
         } else {
             query_string += '&mode=view';

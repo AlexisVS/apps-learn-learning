@@ -37,6 +37,7 @@ export class AppComponent implements OnInit {
     public has_access_to_course: boolean = false;
     public is_loading: boolean = true;
 
+    public mode: 'view' | 'edit' = 'view';
     public current_module_progression_index: number;
     public current_chapter_progression_index: number;
     public current_page_progression_index: number;
@@ -67,8 +68,35 @@ export class AppComponent implements OnInit {
         this.appInfo = await this.api.get('envinfo');
 
         await this.learnService.loadRessources(+this.route.snapshot.params.id);
-        this.userStatement = this.learnService.getUserStatement();
+
+        if (
+            this.route.snapshot.queryParamMap.has('mode') &&
+            await this.learnService.userHasAccessToCourseEditMode()
+        ) {
+            this.mode = this.route.snapshot.queryParams.mode;
+        }
+
+        if (this.route.snapshot.queryParamMap.has('module')) {
+            this.learnService.currentProgressionIndex = {
+                module: +this.route.snapshot.queryParams.module,
+                chapter: 0,
+                page: 0,
+            };
+
+            if (this.route.snapshot.queryParamMap.has('chapter')) {
+                this.learnService.currentProgressionIndex.chapter = +this.route.snapshot.queryParams.chapter;
+
+                if (this.route.snapshot.queryParamMap.has('page')) {
+                    this.learnService.currentProgressionIndex.page = +this.route.snapshot.queryParams.page;
+                }
+            }
+
+            await this.learnService.loadCourseModule(this.route.snapshot.queryParams.module);
+        }
+
         this.course = this.learnService.course;
+
+        this.userStatement = this.learnService.getUserStatement();
 
         if (this.course) {
             this.module = this.course.modules[this.learnService.currentProgressionIndex.module];
@@ -153,15 +181,19 @@ export class AppComponent implements OnInit {
                 const module_index: number = this.course.modules.findIndex(module => module.id === event.data.module_id);
                 const next_module: Module = this.course.modules[module_index + 1];
 
-                const userStatus = [...this.userStatement.userStatus].map(userStatus => ({
-                    ...userStatus,
-                    is_complete: true,
-                }));
+                const userStatus = this.userStatement.userStatus.map(userStatus => {
+                    if (userStatus.module_id !== event.data.module_id) {
+                        return userStatus;
+                    }
 
-                this.userStatement = {
-                    ...this.userStatement,
-                    userStatus,
-                };
+                    return {
+                        ...userStatus,
+                        is_complete: true,
+                    };
+                });
+
+                this.learnService.userStatus = userStatus;
+                this.userStatement = this.learnService.getUserStatement();
 
                 if (!next_module) {
                     return;

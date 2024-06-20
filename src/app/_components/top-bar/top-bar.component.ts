@@ -18,6 +18,7 @@ export class TopBarComponent implements OnInit, OnChanges {
     @Input() public course: Course;
     @Input() public module: Module;
     @Input() public appInfo: AppInfo;
+    @Input() public mode: 'view' | 'edit';
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
 

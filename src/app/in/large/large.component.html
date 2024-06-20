@@ -1,6 +1,7 @@
 <app-top-bar
     *ngIf="course && appInfo && environnementInfo && userStatement"
     [userStatement]="userStatement"
+    [mode]="mode"
     [current_chapter_progression_index]="current_chapter_progression_index"
     [current_page_progression_index]="current_page_progression_index"
     [appInfo]="appInfo"
@@ -9,7 +10,7 @@
 ></app-top-bar>
 <div class="body">
     <div class="side-bar">
-        <div class="search" *ngIf="has_access_to_course">
+        <div class="search">
             <mat-icon class="search-icon" matPrefix>search</mat-icon>
             <input type="search" />
         </div>
@@ -30,6 +31,7 @@
                 <app-content
                     [appInfo]="appInfo"
                     [course]="course"
+                    [mode]="mode"
                     [current_chapter_progression_index]="current_chapter_progression_index"
                     [current_module_progression_index]="current_module_progression_index"
                     [current_page_progression_index]="current_page_progression_index"

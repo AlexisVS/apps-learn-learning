@@ -21,6 +21,7 @@ export class LargeComponent {
     @Input() public module: Module;
     @Input() public has_access_to_course: boolean;
     @Input() public is_loading: boolean;
+    @Input() public mode: 'view' | 'edit';
     @Input() public current_module_progression_index: number;
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
