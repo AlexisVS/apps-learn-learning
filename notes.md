@@ -8,45 +8,9 @@
 
 Ranger les composant dans le dossier `in`.
 
-## TODO
+## Scripts
 
-- [x] Créer des composants de routing qui respecte la hiérarchie des entités d'Equal
-- [x] Créer une navigation (left panel)
-
-  - Est ce que je doit modifier la logique dans app.root.component.ts ?
-
-    <br>app.root.component.ts:
-
-    ```ts
-    public async ngOnInit() {
-      // TODO: <AlexisVS> Disabled for development purpose
-      // try {
-      //     await this.auth.authenticate();
-      // }
-      // catch(err) {
-      //     window.location.href = '/auth';
-      //     return;
-      // }
-
-      // load menus from server
-      this.env.getEnv().then( async (environment:any) => {
-          this.app_root_package = 'core';
-          const data = await this.api.getMenu(this.app_root_package, 'sandbox.left');
-          // store full translated menu
-          this.leftMenu = this.translateMenu(data.items, data.translation);
-          // fill left pane with unfiltered menu
-          this.navMenuItems = this.leftMenu;
-          // this.translationsMenuLeft = this.leftMenu.translation;
-
-          const top_menu:any = await this.api.getMenu(this.app_root_package, 'sandbox.top');
-          this.topMenuItems = top_menu.items;
-          this.translationsMenuTop = top_menu.translation;
-      });
-    }
-    ```
-
-- [ ] Créer un layout pour les pages 'vitrine' ?
-- [ ] Créer la view show adapté pour {pack (course), module, chapter (lesson), page }
-  - [ ] Layout ?
-  - [ ] Type TS pour Pack (Course ?) ?
-    - [ ] Type générique ?
+- Build the app, create version file and move the app and the manifest to the wamp server:
+  ```bash
+  rm -rf ./.angular && nvm use 14 && npm link sb-shared-lib && ng build --configuration production --output-hashing none --base-href="/learning/" && cp manifest.json dist/symbiose/ && cat web.app | md5sum | awk '{print $1}' > version && cp version dist/symbiose && zip -r ./web.app dist/symbiose/* && rm -rf /mnt/c/wamp64/www/equal/public/learning && cp -r dist/symbiose /mnt/c/wamp64/www/equal/public/learning && cp version /mnt/c/wamp64/www/equal/packages/learn/apps/learning && cp manifest.json /mnt/c/wamp64/www/equal/packages/learn/apps/learning && cp web.app /mnt/c/wamp64/www/equal/packages/learn/apps/learning 
+  ```

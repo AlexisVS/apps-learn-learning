@@ -4,6 +4,7 @@ import { AppComponent } from './in/app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+// @ts-ignore
 import { SharedLibModule, CustomDateAdapter } from 'sb-shared-lib';
 import { MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -22,6 +23,9 @@ import { ContentComponent } from './in/large/tabs/content/content.component';
 import { PresentationComponent } from './in/large/tabs/presentation/presentation.component';
 import { QAndAComponent } from './in/large/tabs/q-and-a/q-and-a.component';
 import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
+import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.component';
+import { CompletionDialogComponent } from './_components/completion-dialog/completion-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
     declarations: [
@@ -34,6 +38,8 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
         PresentationComponent,
         QAndAComponent,
         ReviewsComponent,
+        CourseNotFoundComponent,
+        CompletionDialogComponent,
     ],
     imports: [
         AppRoutingModule,
@@ -47,6 +53,7 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
         MatExpansionModule,
         MatListModule,
         MatProgressSpinnerModule,
+        MatDialogModule,
     ],
     providers: [
         // add HTTP interceptor to inject AUTH header to any outgoing request
@@ -65,5 +72,4 @@ import { ReviewsComponent } from './in/large/tabs/reviews/reviews.component';
     ],
     bootstrap: [AppRootComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

@@ -1,13 +1,20 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, Route, RouterModule } from '@angular/router';
 import { AppComponent } from './in/app.component';
-import { LargeComponent } from './in/large/large.component';
-import { SmallComponent } from './in/small/small.component';
+import { CourseNotFoundComponent } from './in/course-not-found/course-not-found.component';
 
 const routes: Route[] = [
     {
-        path: ':slug',
+        path: 'course/:id/:slug',
         component: AppComponent,
+    },
+    {
+        path: '',
+        redirectTo: '**',
+    },
+    {
+        path: '**',
+        component: CourseNotFoundComponent,
     },
 ];
 

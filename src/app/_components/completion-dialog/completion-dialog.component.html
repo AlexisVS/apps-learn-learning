@@ -1,0 +1,9 @@
+<div mat-dialog-content class="content">
+    <img src="assets/svg/medal.svg" alt="">
+    <h2>Congratulations!</h2>
+    <p>You have finished the module. Do you want to continue?</p>
+</div>
+<div mat-dialog-actions class="actions">
+    <button mat-raised-button mat-dialog-close color="warn" (click)="closeDialog()">Cancel</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="next">Continue</button>
+</div>

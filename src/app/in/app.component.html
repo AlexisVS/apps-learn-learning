@@ -5,10 +5,13 @@
     [environnementInfo]="environnementInfo"
     [appInfo]="appInfo"
     [course]="course"
-    [hasAccessToCourse]="hasAccessToCourse"
-    [isLoading]="isLoading"
-    [currentModuleProgressionIndex]="currentModuleProgressionIndex"
-    [currentChapterProgressionIndex]="currentChapterProgressionIndex"
-    (moduleToLoad)="onModuleClick($event)"
+    [module]="module"
+    [has_access_to_course]="has_access_to_course"
+    [is_loading]="is_loading"
+    [mode]="mode"
+    [current_module_progression_index]="current_module_progression_index"
+    [current_chapter_progression_index]="current_chapter_progression_index"
+    [current_page_progression_index]="current_page_progression_index"
+    (moduleAndChapterToLoad)="onModuleClick($event)"
 ></app-large>
 <app-small *ngIf="device === 'small'"></app-small>

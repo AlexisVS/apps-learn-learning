@@ -1,0 +1,19 @@
+:host {
+    position: relative;
+    top: -20px;
+    overflow: hidden;
+
+    .iframe {
+        position: relative;
+        left: -20px;
+        transform-origin: top left;
+        transform: translate(-10%, 0%);
+        scale: 80%;
+
+        width: 150%;
+        min-width: 100%;
+        height: 150%;
+
+        border: none;
+    }
+}
