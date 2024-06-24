@@ -10,10 +10,10 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 export enum MessageEventEnum {
     EQ_ACTION_LEARN_NEXT = 'eq_action_learn_next',
-    CHAPTER_REMOVED = 'chapter_removed',
-    PAGE_REMOVED = 'page_removed',
-    CHAPTER_PROGRESSION_FINISHED = 'chapter_progression_finished',
-    MODULE_PROGRESSION_FINISHED = 'module_progression_finished',
+    QU_CHAPTER_REMOVED = 'qu_chapter_removed',
+    QU_PAGE_REMOVED = 'qu_page_removed',
+    QU_CHAPTER_PROGRESSION_FINISHED = 'qu_chapter_progression_finished',
+    QU_MODULE_PROGRESSION_FINISHED = 'qu_module_progression_finished',
 }
 
 export type QursusMessageEvent = {
@@ -139,7 +139,7 @@ export class AppComponent implements OnInit {
         this.userStatement = this.learnService.getUserStatement();
 
         switch (event.type) {
-            case MessageEventEnum.CHAPTER_REMOVED:
+            case MessageEventEnum.QU_CHAPTER_REMOVED:
                 this.learnService.removeChapter(
                     event.data.module_id,
                     event.data.chapter_id,
@@ -147,7 +147,7 @@ export class AppComponent implements OnInit {
                 this.course = this.learnService.course;
                 break;
 
-            case MessageEventEnum.PAGE_REMOVED:
+            case MessageEventEnum.QU_PAGE_REMOVED:
                 await this.learnService.reloadChapter(
                     event.data.module_id,
                     event.data.chapter_id,
@@ -161,7 +161,7 @@ export class AppComponent implements OnInit {
 
                 break;
 
-            case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
+            case MessageEventEnum.QU_CHAPTER_PROGRESSION_FINISHED:
                 let chapter_index: number = event.data.chapter_index;
 
                 if (this.course.modules[this.current_module_progression_index].chapters[chapter_index + 1]) {
@@ -177,7 +177,7 @@ export class AppComponent implements OnInit {
                 this.current_chapter_progression_index = chapter_index;
                 break;
 
-            case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
+            case MessageEventEnum.QU_MODULE_PROGRESSION_FINISHED:
                 const module_index: number = this.course.modules.findIndex(module => module.id === event.data.module_id);
                 const next_module: Module = this.course.modules[module_index + 1];
 
