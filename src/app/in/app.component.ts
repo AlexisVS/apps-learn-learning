@@ -67,7 +67,8 @@ export class AppComponent implements OnInit {
         this.environnementInfo = await this.api.get('appinfo/learn/learning');
         this.appInfo = await this.api.get('envinfo');
 
-        await this.learnService.loadRessources(+this.route.snapshot.params.id);
+        this.learnService.course_id = this.route.snapshot.params.id.toString();
+        await this.learnService.getUserInfos();
 
         if (
             this.route.snapshot.queryParamMap.has('mode') &&
@@ -75,6 +76,8 @@ export class AppComponent implements OnInit {
         ) {
             this.mode = this.route.snapshot.queryParams.mode;
         }
+
+        await this.learnService.loadRessources(this.mode);
 
         if (this.route.snapshot.queryParamMap.has('module')) {
             this.learnService.currentProgressionIndex = {
@@ -119,10 +122,6 @@ export class AppComponent implements OnInit {
             }
 
             try {
-                event.data.hasOwnProperty('type') && event.data.hasOwnProperty('data')
-                    ? console.table({ name: event.data.type, ...event.data.data })
-                    : console.table({ name: event.data });
-
                 this.handleQursusIframeEvent(event.data);
             } catch (error) {
                 console.error('AppComponent.handleQursusIframeEvent =>', error);
@@ -181,27 +180,28 @@ export class AppComponent implements OnInit {
                 const module_index: number = this.course.modules.findIndex(module => module.id === event.data.module_id);
                 const next_module: Module = this.course.modules[module_index + 1];
 
-                const userStatus = this.userStatement.userStatus.map(userStatus => {
-                    if (userStatus.module_id !== event.data.module_id) {
-                        return userStatus;
+                if (next_module && !this.userStatement.userStatus.find(userStatus => userStatus.module_id === next_module.id) !== undefined) {
+                    this.learnService.userStatus = this.userStatement.userStatus.map(userStatus => {
+                        if (userStatus.module_id !== event.data.module_id) {
+                            return userStatus;
+                        }
+
+                        return {
+                            ...userStatus,
+                            is_complete: true,
+                        };
+                    });
+
+                    this.userStatement = this.learnService.getUserStatement();
+
+                    if (!next_module) {
+                        return;
                     }
 
-                    return {
-                        ...userStatus,
-                        is_complete: true,
-                    };
-                });
+                    this.course = await this.learnService.loadCourseModule(next_module.id);
 
-                this.learnService.userStatus = userStatus;
-                this.userStatement = this.learnService.getUserStatement();
-
-                if (!next_module) {
-                    return;
+                    this.openModuleCompletionDialog();
                 }
-
-                this.course = await this.learnService.loadCourseModule(next_module.id);
-
-                this.openModuleCompletionDialog();
                 break;
         }
     }
@@ -247,5 +247,23 @@ export class AppComponent implements OnInit {
                 this.completionDialog.closeAll();
             }
         });
+    }
+
+    public async setCurrentNavigation($event: { module_index: number; chapter_index: number }): Promise<void> {
+        this.current_module_progression_index = $event.module_index;
+        this.current_chapter_progression_index = $event.chapter_index;
+        this.current_page_progression_index = 0;
+
+        this.learnService.currentProgressionIndex = {
+            module: this.current_module_progression_index,
+            chapter: this.current_chapter_progression_index,
+            page: this.current_page_progression_index,
+        };
+
+        if (this.module.id !== this.course.modules[this.current_module_progression_index].id) {
+            await this.learnService.loadCourseModule(this.course.modules[this.current_module_progression_index].id);
+
+            this.module = this.course.modules[this.current_module_progression_index];
+        }
     }
 }

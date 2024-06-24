@@ -26,9 +26,14 @@ export class LargeComponent {
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
 
-    @Output() public moduleAndChapterToLoad: EventEmitter<{ module_id: number, chapter_id: number }> = new EventEmitter<{
+    @Output() public moduleAndChapterToLoad = new EventEmitter<{
         module_id: number,
         chapter_id: number
+    }>();
+
+    @Output() public setCurrentNavigation = new EventEmitter<{
+        module_index: number,
+        chapter_index: number
     }>();
 
     public drawer_state: DrawerState = 'inactive';
@@ -40,8 +45,7 @@ export class LargeComponent {
     /** Used for drawer chapter selection */
     public currentNavigation: { module_id: number, chapter_index: number } | null = null;
 
-    constructor(
-    ) {
+    constructor() {
         this.onClickOutsideActiveStateDrawer();
         this.qursusIframeClickedInside();
     }
@@ -123,11 +127,23 @@ export class LargeComponent {
         const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
         const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-        if (module_index === this.current_module_progression_index && chapter_index === this.current_chapter_progression_index) {
-            this.currentNavigation = null;
+        if (this.mode === 'edit') {
+            this.setCurrentNavigation.emit({
+                module_index: module_index,
+                chapter_index: chapter_index,
+            });
         }
 
-        this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
+        if (
+            module_index === this.current_module_progression_index &&
+            chapter_index === this.current_chapter_progression_index
+        ) {
+            this.currentNavigation = null;
+        } else {
+            this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
+        }
+
+
     }
 
 

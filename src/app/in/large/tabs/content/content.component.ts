@@ -86,14 +86,10 @@ export class ContentComponent implements OnInit, OnChanges {
             mode === 'edit' &&
             this.learnService.userHasAccessToCourseEditMode()
         ) {
-            console.log('userHasAccessToCourseEditMode');
             query_string += '&mode=edit';
         } else {
             query_string += '&mode=view';
         }
-
-        console.log('ContentTabComponent::ngOnInit ( qursus )', query_string);
-
         this.qursusUrl = this.sanitizer.bypassSecurityTrustResourceUrl(base_url + query_string);
     }
 }
