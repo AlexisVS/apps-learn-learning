@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Course, Module, UserStatement } from '../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../_types/equal';
 // @ts-ignore
@@ -51,6 +51,7 @@ export class AppComponent implements OnInit {
         private router: Router,
         private learnService: LearnService,
         private completionDialog: MatDialog,
+        private cdr: ChangeDetectorRef,
     ) {
     }
 
@@ -160,18 +161,20 @@ export class AppComponent implements OnInit {
                 break;
 
             case MessageEventEnum.QU_CHAPTER_ADDED:
-                console.log('QU_CHAPTER_ADDED IN CASE !!!!');
                 await this.learnService.loadChapter(
                     event.data.module_id,
                     event.data.chapter_id,
                 );
-                this.course = { ...this.learnService.course };
-                this.module = this.course.modules[this.current_module_progression_index];
+
+                this.course = this.learnService.course;
+                this.module = this.learnService.course.modules[this.current_module_progression_index];
 
                 this.learnService.currentProgressionIndex.chapter = this.module.chapters.length - 1;
                 this.current_chapter_progression_index = this.module.chapters.length - 1;
                 this.learnService.currentProgressionIndex.page = 0;
                 this.current_page_progression_index = 0;
+
+                this.cdr.detectChanges();
                 break;
 
             case MessageEventEnum.QU_PAGE_REMOVED:

@@ -72,7 +72,8 @@
                         </mat-expansion-panel-header>
 
                         <mat-selection-list [multiple]="false" *ngIf="module.chapters && module.chapters.length > 0">
-                            <ng-container *ngFor="let chapter of module.chapters; index as chapterIndex; trackBy: trackByChapterId">
+                            <ng-container
+                                *ngFor="let chapter of module.chapters; index as chapterIndex; trackBy: trackByChapterId">
                                 <mat-list-option
                                     [class.selected]="current_module_progression_index === moduleIndex && current_chapter_progression_index === chapterIndex ? 'primary' : undefined"
                                     *ngIf="chapter"

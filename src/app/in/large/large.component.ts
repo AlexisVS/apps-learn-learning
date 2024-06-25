@@ -1,4 +1,11 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, Module, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../../_types/equal';
@@ -10,7 +17,7 @@ type DrawerState = 'inactive' | 'active' | 'pinned';
     templateUrl: './large.component.html',
     styleUrls: ['./large.component.scss'],
 })
-export class LargeComponent implements OnChanges {
+export class LargeComponent {
     @ViewChild('drawer', { static: true }) drawer: ElementRef<HTMLDivElement>;
     @ViewChild('sideBarMenuButton') sideBarMenuButton: MatButton;
 
@@ -48,23 +55,6 @@ export class LargeComponent implements OnChanges {
     constructor() {
         this.onClickOutsideActiveStateDrawer();
         this.qursusIframeClickedInside();
-    }
-
-    public ngOnChanges(changes: SimpleChanges) {
-        if (
-            changes.hasOwnProperty('course') &&
-            !changes.course.isFirstChange() &&
-            changes.course.currentValue !== changes.course.previousValue
-        ) {
-            console.log('LargeComponent.ngOnChanges');
-            this.course = {
-                ...this.course,
-                modules: this.course.modules.map(module => ({
-                    ...module,
-                    chapters: [...module.chapters]
-                }))
-            };
-        }
     }
 
     private qursusIframeClickedInside(): void {

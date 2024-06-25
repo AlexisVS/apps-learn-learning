@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
 import { User, UserInfo } from '../_types/equal';
-import { Chapter, Course, ProgressionIndex, UserAccess, UserStatement, UserStatus } from '../_types/learn';
+import { Chapter, Course, Module, ProgressionIndex, UserAccess, UserStatement, UserStatus } from '../_types/learn';
 
 @Injectable({
     providedIn: 'root',
@@ -153,7 +153,21 @@ export class LearnService {
             const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
             const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-            this.course.modules[module_index].chapters[chapter_index] = chapter;
+            const updatedModules: Module[] = this.course.modules.map((module, index) => {
+                if (index !== module_index) {
+                    return module;
+                }
+                const updatedChapters: Chapter[] = module.chapters.map((mappedChapter, chIdx) => {
+                    return chIdx !== chapter_index ? mappedChapter : { ...mappedChapter, ...chapter };
+                });
+
+                return { ...module, chapters: updatedChapters };
+            });
+
+            this.course = {
+                ...this.course,
+                modules: updatedModules,
+            };
 
         } catch (error) {
             console.error(error);
