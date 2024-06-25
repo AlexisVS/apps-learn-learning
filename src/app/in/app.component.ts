@@ -10,6 +10,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 export enum MessageEventEnum {
     EQ_ACTION_LEARN_NEXT = 'eq_action_learn_next',
+    QU_CHAPTER_ADDED = 'qu_chapter_added',
     QU_CHAPTER_REMOVED = 'qu_chapter_removed',
     QU_PAGE_REMOVED = 'qu_page_removed',
     QU_CHAPTER_PROGRESSION_FINISHED = 'qu_chapter_progression_finished',
@@ -80,8 +81,11 @@ export class AppComponent implements OnInit {
         await this.learnService.loadRessources(this.mode);
 
         if (this.route.snapshot.queryParamMap.has('module')) {
+
+            const moduleIndex: number = this.learnService.course.modules.findIndex(module => module.id === +this.route.snapshot.queryParams.module);
+
             this.learnService.currentProgressionIndex = {
-                module: +this.route.snapshot.queryParams.module,
+                module: moduleIndex,
                 chapter: 0,
                 page: 0,
             };
@@ -122,6 +126,10 @@ export class AppComponent implements OnInit {
             }
 
             try {
+                event.data.hasOwnProperty('data') && event.data.hasOwnProperty('type')
+                    ? console.table({ eventName: event.data.type, ...event.data.data })
+                    : console.table({ eventName: event.data });
+
                 this.handleQursusIframeEvent(event.data);
             } catch (error) {
                 console.error('AppComponent.handleQursusIframeEvent =>', error);
@@ -144,10 +152,30 @@ export class AppComponent implements OnInit {
                     event.data.chapter_id,
                 );
                 this.course = this.learnService.course;
+                this.module = this.course.modules[this.current_module_progression_index];
+                if (this.current_chapter_progression_index > this.module.chapters.length - 1) {
+                    this.current_chapter_progression_index = this.module.chapters.length - 1;
+                    this.learnService.currentProgressionIndex.chapter = this.current_chapter_progression_index;
+                }
+                break;
+
+            case MessageEventEnum.QU_CHAPTER_ADDED:
+                console.log('QU_CHAPTER_ADDED IN CASE !!!!');
+                await this.learnService.loadChapter(
+                    event.data.module_id,
+                    event.data.chapter_id,
+                );
+                this.course = { ...this.learnService.course };
+                this.module = this.course.modules[this.current_module_progression_index];
+
+                this.learnService.currentProgressionIndex.chapter = this.module.chapters.length - 1;
+                this.current_chapter_progression_index = this.module.chapters.length - 1;
+                this.learnService.currentProgressionIndex.page = 0;
+                this.current_page_progression_index = 0;
                 break;
 
             case MessageEventEnum.QU_PAGE_REMOVED:
-                await this.learnService.reloadChapter(
+                await this.learnService.loadChapter(
                     event.data.module_id,
                     event.data.chapter_id,
                 );

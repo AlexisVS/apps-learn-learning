@@ -126,12 +126,12 @@ export class LearnService {
     }
 
     /**
-     * Reload the chapter from the course.
+     * load or reload the chapter of the module's course.
      *
      * @param module_id
      * @param chapter_id
      */
-    public async reloadChapter(module_id: number, chapter_id: number): Promise<void> {
+    public async loadChapter(module_id: number, chapter_id: number): Promise<void> {
         try {
             const chapter: Chapter = (await this.api.collect(
                 'learn\\Chapter',

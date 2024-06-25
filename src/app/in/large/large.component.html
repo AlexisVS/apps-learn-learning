@@ -53,7 +53,7 @@
 
         <div #drawer class="drawer" [class]="drawer_state">
             <mat-accordion multi *ngIf="course">
-                <ng-container *ngFor="let module of course.modules; index as moduleIndex">
+                <ng-container *ngFor="let module of course.modules; index as moduleIndex; trackBy: trackByModuleId">
                     <mat-expansion-panel
                         class="module-panel"
                         (opened)="selected_module_index = moduleIndex"
@@ -72,7 +72,7 @@
                         </mat-expansion-panel-header>
 
                         <mat-selection-list [multiple]="false" *ngIf="module.chapters && module.chapters.length > 0">
-                            <ng-container *ngFor="let chapter of module.chapters; index as chapterIndex">
+                            <ng-container *ngFor="let chapter of module.chapters; index as chapterIndex; trackBy: trackByChapterId">
                                 <mat-list-option
                                     [class.selected]="current_module_progression_index === moduleIndex && current_chapter_progression_index === chapterIndex ? 'primary' : undefined"
                                     *ngIf="chapter"
