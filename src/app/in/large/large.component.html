@@ -22,8 +22,8 @@
 
     <mat-spinner *ngIf="is_loading" class="spinner"></mat-spinner>
 
-    <div class="content">
-        <div class="no-content font-size-6" *ngIf="!has_access_to_course && !is_loading">
+    <div class="content" *ngIf="!is_loading">
+        <div class="no-content font-size-6" *ngIf="!has_access_to_course">
             <span>You don't have access to course</span>
         </div>
         <mat-tab-group *ngIf="has_access_to_course" [class]="drawer_state === 'pinned' ? 'tab--pinned' : ''">
