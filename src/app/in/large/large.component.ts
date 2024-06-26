@@ -2,8 +2,8 @@ import {
     Component,
     ElementRef,
     EventEmitter,
-    Input,
-    Output,
+    Input, OnChanges, OnInit,
+    Output, SimpleChanges,
     ViewChild,
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
@@ -17,7 +17,7 @@ type DrawerState = 'inactive' | 'active' | 'pinned';
     templateUrl: './large.component.html',
     styleUrls: ['./large.component.scss'],
 })
-export class LargeComponent {
+export class LargeComponent implements OnInit, OnChanges {
     @ViewChild('drawer', { static: true }) drawer: ElementRef<HTMLDivElement>;
     @ViewChild('sideBarMenuButton') sideBarMenuButton: MatButton;
 
@@ -43,6 +43,8 @@ export class LargeComponent {
         chapter_index: number
     }>();
 
+    public modules: Module[];
+
     public drawer_state: DrawerState = 'inactive';
     public menu_icon: string = 'menu';
 
@@ -55,6 +57,22 @@ export class LargeComponent {
     constructor() {
         this.onClickOutsideActiveStateDrawer();
         this.qursusIframeClickedInside();
+    }
+
+    public ngOnInit(): void {
+        if (this.course) {
+            this.modules = this.course.modules;
+        }
+    }
+
+    public ngOnChanges(changes: SimpleChanges): void {
+        if (
+            changes.hasOwnProperty('course') &&
+            changes.course.previousValue !== changes.course.currentValue
+        ) {
+            this.modules = [...this.course.modules];
+            console.log(this.course.modules.reduce((acc, module) => acc + module.chapters.length, 0));
+        }
     }
 
     private qursusIframeClickedInside(): void {
@@ -121,16 +139,20 @@ export class LargeComponent {
     }
 
     public getUserStatusChapterIndex(module_id: number): number {
-        const chapterStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === module_id);
-
         let chapter_index: number = 0;
+
+        if (this.mode === 'edit') {
+            return chapter_index;
+        }
+
+        const chapterStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === module_id);
 
         if (chapterStatus) {
             chapter_index = chapterStatus.chapter_index;
 
             if (chapterStatus?.is_complete) {
-                const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-                chapter_index = this.course.modules[module_index].chapters.length;
+                const module_index: number = this.modules.findIndex(module => module.id === module_id);
+                chapter_index = this.modules[module_index].chapters.length;
             }
         }
 
@@ -139,8 +161,8 @@ export class LargeComponent {
 
     public async onClickChapter(module_id: number, chapter_id: number): Promise<void> {
         this.moduleAndChapterToLoad.emit({ module_id: module_id, chapter_id: chapter_id });
-        const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-        const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
+        const module_index: number = this.modules.findIndex(module => module.id === module_id);
+        const chapter_index: number = this.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
         if (this.mode === 'edit') {
             this.setCurrentNavigation.emit({
@@ -157,9 +179,5 @@ export class LargeComponent {
         } else {
             this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
         }
-
-
     }
-
-
 }

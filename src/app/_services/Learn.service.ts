@@ -151,15 +151,12 @@ export class LearnService {
             ))[0];
 
             const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-            const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
             const updatedModules: Module[] = this.course.modules.map((module, index) => {
                 if (index !== module_index) {
                     return module;
                 }
-                const updatedChapters: Chapter[] = module.chapters.map((mappedChapter, chIdx) => {
-                    return chIdx !== chapter_index ? mappedChapter : { ...mappedChapter, ...chapter };
-                });
+                const updatedChapters: Chapter[] = [...module.chapters, chapter];
 
                 return { ...module, chapters: updatedChapters };
             });
@@ -184,7 +181,20 @@ export class LearnService {
         const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
         const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-        this.course.modules[module_index].chapters.splice(chapter_index, 1);
+        const updatedChapters: Chapter[] = this.course.modules[module_index].chapters.filter(chapter => chapter.id !== chapter_id);
+
+        const updatedModules: Module[] = this.course.modules.map((module, index) => {
+            if (index !== module_index) {
+                return module;
+            }
+
+            return { ...module, chapters: updatedChapters };
+        });
+
+        this.course = {
+            ...this.course,
+            modules: updatedModules,
+        };
     }
 
     private async loadCourse(): Promise<Course> {

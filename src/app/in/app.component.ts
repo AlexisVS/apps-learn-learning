@@ -51,7 +51,6 @@ export class AppComponent implements OnInit {
         private router: Router,
         private learnService: LearnService,
         private completionDialog: MatDialog,
-        private cdr: ChangeDetectorRef,
     ) {
     }
 
@@ -152,7 +151,7 @@ export class AppComponent implements OnInit {
                     event.data.module_id,
                     event.data.chapter_id,
                 );
-                this.course = this.learnService.course;
+                this.course = {... this.learnService.course };
                 this.module = this.course.modules[this.current_module_progression_index];
                 if (this.current_chapter_progression_index > this.module.chapters.length - 1) {
                     this.current_chapter_progression_index = this.module.chapters.length - 1;
@@ -173,8 +172,6 @@ export class AppComponent implements OnInit {
                 this.current_chapter_progression_index = this.module.chapters.length - 1;
                 this.learnService.currentProgressionIndex.page = 0;
                 this.current_page_progression_index = 0;
-
-                this.cdr.detectChanges();
                 break;
 
             case MessageEventEnum.QU_PAGE_REMOVED:
