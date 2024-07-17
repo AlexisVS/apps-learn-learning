@@ -1,4 +1,11 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input, OnChanges, OnInit,
+    Output, SimpleChanges,
+    ViewChild,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { Course, Module, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../../_types/equal';
@@ -10,7 +17,7 @@ type DrawerState = 'inactive' | 'active' | 'pinned';
     templateUrl: './large.component.html',
     styleUrls: ['./large.component.scss'],
 })
-export class LargeComponent {
+export class LargeComponent implements OnInit, OnChanges {
     @ViewChild('drawer', { static: true }) drawer: ElementRef<HTMLDivElement>;
     @ViewChild('sideBarMenuButton') sideBarMenuButton: MatButton;
 
@@ -26,10 +33,17 @@ export class LargeComponent {
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
 
-    @Output() public moduleAndChapterToLoad: EventEmitter<{ module_id: number, chapter_id: number }> = new EventEmitter<{
+    @Output() public moduleAndChapterToLoad = new EventEmitter<{
         module_id: number,
         chapter_id: number
     }>();
+
+    @Output() public setCurrentNavigation = new EventEmitter<{
+        module_index: number,
+        chapter_index: number
+    }>();
+
+    public modules: Module[];
 
     public drawer_state: DrawerState = 'inactive';
     public menu_icon: string = 'menu';
@@ -40,10 +54,25 @@ export class LargeComponent {
     /** Used for drawer chapter selection */
     public currentNavigation: { module_id: number, chapter_index: number } | null = null;
 
-    constructor(
-    ) {
+    constructor() {
         this.onClickOutsideActiveStateDrawer();
         this.qursusIframeClickedInside();
+    }
+
+    public ngOnInit(): void {
+        if (this.course) {
+            this.modules = this.course.modules;
+        }
+    }
+
+    public ngOnChanges(changes: SimpleChanges): void {
+        if (
+            changes.hasOwnProperty('course') &&
+            changes.course.previousValue !== changes.course.currentValue
+        ) {
+            this.modules = [...this.course.modules];
+            console.log(this.course.modules.reduce((acc, module) => acc + module.chapters.length, 0));
+        }
     }
 
     private qursusIframeClickedInside(): void {
@@ -71,6 +100,14 @@ export class LargeComponent {
                 }
             }
         });
+    }
+
+    public trackByModuleId(index: number, module: Module): number {
+        return module.id;
+    }
+
+    public trackByChapterId(index: number, chapter: any): number {
+        return chapter.id;
     }
 
     public onDrawerButtonClick(): void {
@@ -102,16 +139,20 @@ export class LargeComponent {
     }
 
     public getUserStatusChapterIndex(module_id: number): number {
-        const chapterStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === module_id);
-
         let chapter_index: number = 0;
+
+        if (this.mode === 'edit') {
+            return chapter_index;
+        }
+
+        const chapterStatus: UserStatus | undefined = this.userStatement.userStatus.find(userStatus => userStatus.module_id === module_id);
 
         if (chapterStatus) {
             chapter_index = chapterStatus.chapter_index;
 
             if (chapterStatus?.is_complete) {
-                const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-                chapter_index = this.course.modules[module_index].chapters.length;
+                const module_index: number = this.modules.findIndex(module => module.id === module_id);
+                chapter_index = this.modules[module_index].chapters.length;
             }
         }
 
@@ -120,15 +161,23 @@ export class LargeComponent {
 
     public async onClickChapter(module_id: number, chapter_id: number): Promise<void> {
         this.moduleAndChapterToLoad.emit({ module_id: module_id, chapter_id: chapter_id });
-        const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-        const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
+        const module_index: number = this.modules.findIndex(module => module.id === module_id);
+        const chapter_index: number = this.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-        if (module_index === this.current_module_progression_index && chapter_index === this.current_chapter_progression_index) {
-            this.currentNavigation = null;
+        if (this.mode === 'edit') {
+            this.setCurrentNavigation.emit({
+                module_index: module_index,
+                chapter_index: chapter_index,
+            });
         }
 
-        this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
+        if (
+            module_index === this.current_module_progression_index &&
+            chapter_index === this.current_chapter_progression_index
+        ) {
+            this.currentNavigation = null;
+        } else {
+            this.currentNavigation = { module_id: module_id, chapter_index: chapter_index };
+        }
     }
-
-
 }

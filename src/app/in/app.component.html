@@ -13,5 +13,6 @@
     [current_chapter_progression_index]="current_chapter_progression_index"
     [current_page_progression_index]="current_page_progression_index"
     (moduleAndChapterToLoad)="onModuleClick($event)"
+    (setCurrentNavigation)="setCurrentNavigation($event)"
 ></app-large>
 <app-small *ngIf="device === 'small'"></app-small>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Course, Module, UserStatement } from '../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../_types/equal';
 // @ts-ignore
@@ -10,10 +10,11 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 export enum MessageEventEnum {
     EQ_ACTION_LEARN_NEXT = 'eq_action_learn_next',
-    CHAPTER_REMOVED = 'chapter_removed',
-    PAGE_REMOVED = 'page_removed',
-    CHAPTER_PROGRESSION_FINISHED = 'chapter_progression_finished',
-    MODULE_PROGRESSION_FINISHED = 'module_progression_finished',
+    QU_CHAPTER_ADDED = 'qu_chapter_added',
+    QU_CHAPTER_REMOVED = 'qu_chapter_removed',
+    QU_PAGE_REMOVED = 'qu_page_removed',
+    QU_CHAPTER_PROGRESSION_FINISHED = 'qu_chapter_progression_finished',
+    QU_MODULE_PROGRESSION_FINISHED = 'qu_module_progression_finished',
 }
 
 export type QursusMessageEvent = {
@@ -67,7 +68,8 @@ export class AppComponent implements OnInit {
         this.environnementInfo = await this.api.get('appinfo/learn/learning');
         this.appInfo = await this.api.get('envinfo');
 
-        await this.learnService.loadRessources(+this.route.snapshot.params.id);
+        this.learnService.course_id = this.route.snapshot.params.id.toString();
+        await this.learnService.getUserInfos();
 
         if (
             this.route.snapshot.queryParamMap.has('mode') &&
@@ -76,9 +78,14 @@ export class AppComponent implements OnInit {
             this.mode = this.route.snapshot.queryParams.mode;
         }
 
+        await this.learnService.loadRessources(this.mode);
+
         if (this.route.snapshot.queryParamMap.has('module')) {
+
+            const moduleIndex: number = this.learnService.course.modules.findIndex(module => module.id === +this.route.snapshot.queryParams.module);
+
             this.learnService.currentProgressionIndex = {
-                module: +this.route.snapshot.queryParams.module,
+                module: moduleIndex,
                 chapter: 0,
                 page: 0,
             };
@@ -119,9 +126,9 @@ export class AppComponent implements OnInit {
             }
 
             try {
-                event.data.hasOwnProperty('type') && event.data.hasOwnProperty('data')
-                    ? console.table({ name: event.data.type, ...event.data.data })
-                    : console.table({ name: event.data });
+                event.data.hasOwnProperty('data') && event.data.hasOwnProperty('type')
+                    ? console.table({ eventName: event.data.type, ...event.data.data })
+                    : console.table({ eventName: event.data });
 
                 this.handleQursusIframeEvent(event.data);
             } catch (error) {
@@ -139,16 +146,36 @@ export class AppComponent implements OnInit {
         this.userStatement = this.learnService.getUserStatement();
 
         switch (event.type) {
-            case MessageEventEnum.CHAPTER_REMOVED:
+            case MessageEventEnum.QU_CHAPTER_REMOVED:
                 this.learnService.removeChapter(
                     event.data.module_id,
                     event.data.chapter_id,
                 );
-                this.course = this.learnService.course;
+                this.course = {... this.learnService.course };
+                this.module = this.course.modules[this.current_module_progression_index];
+                if (this.current_chapter_progression_index > this.module.chapters.length - 1) {
+                    this.current_chapter_progression_index = this.module.chapters.length - 1;
+                    this.learnService.currentProgressionIndex.chapter = this.current_chapter_progression_index;
+                }
                 break;
 
-            case MessageEventEnum.PAGE_REMOVED:
-                await this.learnService.reloadChapter(
+            case MessageEventEnum.QU_CHAPTER_ADDED:
+                await this.learnService.loadChapter(
+                    event.data.module_id,
+                    event.data.chapter_id,
+                );
+
+                this.course = this.learnService.course;
+                this.module = this.learnService.course.modules[this.current_module_progression_index];
+
+                this.learnService.currentProgressionIndex.chapter = this.module.chapters.length - 1;
+                this.current_chapter_progression_index = this.module.chapters.length - 1;
+                this.learnService.currentProgressionIndex.page = 0;
+                this.current_page_progression_index = 0;
+                break;
+
+            case MessageEventEnum.QU_PAGE_REMOVED:
+                await this.learnService.loadChapter(
                     event.data.module_id,
                     event.data.chapter_id,
                 );
@@ -161,7 +188,7 @@ export class AppComponent implements OnInit {
 
                 break;
 
-            case MessageEventEnum.CHAPTER_PROGRESSION_FINISHED:
+            case MessageEventEnum.QU_CHAPTER_PROGRESSION_FINISHED:
                 let chapter_index: number = event.data.chapter_index;
 
                 if (this.course.modules[this.current_module_progression_index].chapters[chapter_index + 1]) {
@@ -177,31 +204,32 @@ export class AppComponent implements OnInit {
                 this.current_chapter_progression_index = chapter_index;
                 break;
 
-            case MessageEventEnum.MODULE_PROGRESSION_FINISHED:
+            case MessageEventEnum.QU_MODULE_PROGRESSION_FINISHED:
                 const module_index: number = this.course.modules.findIndex(module => module.id === event.data.module_id);
                 const next_module: Module = this.course.modules[module_index + 1];
 
-                const userStatus = this.userStatement.userStatus.map(userStatus => {
-                    if (userStatus.module_id !== event.data.module_id) {
-                        return userStatus;
+                if (next_module && !this.userStatement.userStatus.find(userStatus => userStatus.module_id === next_module.id) !== undefined) {
+                    this.learnService.userStatus = this.userStatement.userStatus.map(userStatus => {
+                        if (userStatus.module_id !== event.data.module_id) {
+                            return userStatus;
+                        }
+
+                        return {
+                            ...userStatus,
+                            is_complete: true,
+                        };
+                    });
+
+                    this.userStatement = this.learnService.getUserStatement();
+
+                    if (!next_module) {
+                        return;
                     }
 
-                    return {
-                        ...userStatus,
-                        is_complete: true,
-                    };
-                });
+                    this.course = await this.learnService.loadCourseModule(next_module.id);
 
-                this.learnService.userStatus = userStatus;
-                this.userStatement = this.learnService.getUserStatement();
-
-                if (!next_module) {
-                    return;
+                    this.openModuleCompletionDialog();
                 }
-
-                this.course = await this.learnService.loadCourseModule(next_module.id);
-
-                this.openModuleCompletionDialog();
                 break;
         }
     }
@@ -247,5 +275,23 @@ export class AppComponent implements OnInit {
                 this.completionDialog.closeAll();
             }
         });
+    }
+
+    public async setCurrentNavigation($event: { module_index: number; chapter_index: number }): Promise<void> {
+        this.current_module_progression_index = $event.module_index;
+        this.current_chapter_progression_index = $event.chapter_index;
+        this.current_page_progression_index = 0;
+
+        this.learnService.currentProgressionIndex = {
+            module: this.current_module_progression_index,
+            chapter: this.current_chapter_progression_index,
+            page: this.current_page_progression_index,
+        };
+
+        if (this.module.id !== this.course.modules[this.current_module_progression_index].id) {
+            await this.learnService.loadCourseModule(this.course.modules[this.current_module_progression_index].id);
+
+            this.module = this.course.modules[this.current_module_progression_index];
+        }
     }
 }

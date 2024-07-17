@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
 import { User, UserInfo } from '../_types/equal';
-import { Chapter, Course, ProgressionIndex, UserAccess, UserStatement, UserStatus } from '../_types/learn';
+import { Chapter, Course, Module, ProgressionIndex, UserAccess, UserStatement, UserStatus } from '../_types/learn';
 
 @Injectable({
     providedIn: 'root',
@@ -21,34 +21,18 @@ export class LearnService {
         module: 0,
         chapter: 0,
         page: 0,
-    }
+    };
 
     constructor(
         private api: ApiService,
     ) {
     }
 
-    public async loadRessources(course_id: number): Promise<void> {
+    public async loadRessources(mode: 'view' | 'edit'): Promise<void> {
         try {
-            this.course_id = course_id.toString();
-            await this.getUserInfos();
             await this.loadCourse();
             this.setDocumentTitle();
-            this.setCurrentRessourceIndex();
-
-            // if the last user status is complete, we create a new one for the next module
-            // if (this.userStatus.length > 0 && this.userStatus[0].is_complete) {
-            //     await this.api.create('learn\\UserStatus', {
-            //         course_id: this.course_id,
-            //         module_id: this.course.modules[this.currentModuleProgressionIndex + 1].id,
-            //         user_id: this.userInfo.id,
-            //         chapter_index: 0,
-            //         page_index: 0,
-            //         is_complete: false,
-            //     });
-            //
-            //     await this.loadUserStatus();
-            // }
+            this.setCurrentRessourceIndex(mode);
         } catch (error) {
             console.error('LearnService.loadRessources =>', error);
         }
@@ -142,12 +126,12 @@ export class LearnService {
     }
 
     /**
-     * Reload the chapter from the course.
+     * load or reload the chapter of the module's course.
      *
      * @param module_id
      * @param chapter_id
      */
-    public async reloadChapter(module_id: number, chapter_id: number): Promise<void> {
+    public async loadChapter(module_id: number, chapter_id: number): Promise<void> {
         try {
             const chapter: Chapter = (await this.api.collect(
                 'learn\\Chapter',
@@ -166,10 +150,21 @@ export class LearnService {
                 ],
             ))[0];
 
-            const module_index : number= this.course.modules.findIndex(module => module.id === module_id);
-            const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
+            const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
 
-            this.course.modules[module_index].chapters[chapter_index] = chapter;
+            const updatedModules: Module[] = this.course.modules.map((module, index) => {
+                if (index !== module_index) {
+                    return module;
+                }
+                const updatedChapters: Chapter[] = [...module.chapters, chapter];
+
+                return { ...module, chapters: updatedChapters };
+            });
+
+            this.course = {
+                ...this.course,
+                modules: updatedModules,
+            };
 
         } catch (error) {
             console.error(error);
@@ -183,10 +178,23 @@ export class LearnService {
      * @param chapter_id
      */
     public removeChapter(module_id: number, chapter_id: number): void {
-        const module_index : number= this.course.modules.findIndex(module => module.id === module_id);
+        const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
         const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
-        this.course.modules[module_index].chapters.splice(chapter_index, 1);
+        const updatedChapters: Chapter[] = this.course.modules[module_index].chapters.filter(chapter => chapter.id !== chapter_id);
+
+        const updatedModules: Module[] = this.course.modules.map((module, index) => {
+            if (index !== module_index) {
+                return module;
+            }
+
+            return { ...module, chapters: updatedChapters };
+        });
+
+        this.course = {
+            ...this.course,
+            modules: updatedModules,
+        };
     }
 
     private async loadCourse(): Promise<Course> {
@@ -202,7 +210,7 @@ export class LearnService {
         return this.course;
     }
 
-    private async getUserInfos(): Promise<void> {
+    public async getUserInfos(): Promise<void> {
         try {
             this.userInfo = await this.api.get('userinfo');
 
@@ -252,32 +260,19 @@ export class LearnService {
      *
      * @private
      */
-    private setCurrentRessourceIndex(): void {
+    private setCurrentRessourceIndex(mode: 'view' | 'edit'): void {
         let module_index: number = 0;
         let chapter_index: number = 0;
         let page_index: number = 0;
 
-        if (this.userStatus.length > 0) {
+        if (mode === 'view' && this.userStatus.length > 0) {
             const currentStatus: UserStatus = this.userStatus.sort((a, b) => b.module_id - a.module_id)[0];
             const current_module_id: number = currentStatus.module_id;
-            module_index = this.course.modules.findIndex(module => module.id === current_module_id);
 
+            module_index = this.course.modules.findIndex(module => module.id === current_module_id);
             chapter_index = currentStatus.chapter_index;
             page_index = currentStatus.page_index;
-
-            console.log(
-                'setCurrentRessourceIndex',
-                this.course,
-                current_module_id,
-                module_index,
-                chapter_index,
-                page_index,
-                currentStatus,
-            );
         }
-        // this.currentModuleProgressionIndex = module_index;
-        // this.currentChapterProgressionIndex = chapter_index;
-        // this.currentPageProgressionIndex = page_index;
 
         this.currentProgressionIndex = {
             module: module_index,
