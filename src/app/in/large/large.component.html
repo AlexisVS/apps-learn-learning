@@ -22,8 +22,8 @@
 
     <mat-spinner *ngIf="is_loading" class="spinner"></mat-spinner>
 
-    <div class="content">
-        <div class="no-content font-size-6" *ngIf="!has_access_to_course && !is_loading">
+    <div class="content" *ngIf="!is_loading">
+        <div class="no-content font-size-6" *ngIf="!has_access_to_course">
             <span>You don't have access to course</span>
         </div>
         <mat-tab-group *ngIf="has_access_to_course" [class]="drawer_state === 'pinned' ? 'tab--pinned' : ''">
@@ -53,12 +53,12 @@
 
         <div #drawer class="drawer" [class]="drawer_state">
             <mat-accordion multi *ngIf="course">
-                <ng-container *ngFor="let module of course.modules; index as moduleIndex">
+                <ng-container *ngFor="let module of modules; index as module_index; trackBy: trackByModuleId">
                     <mat-expansion-panel
                         class="module-panel"
-                        (opened)="selected_module_index = moduleIndex"
-                        [expanded]="current_module_progression_index === moduleIndex"
-                        [class.current-progression]="current_module_progression_index === moduleIndex">
+                        (opened)="selected_module_index = module_index"
+                        [expanded]="current_module_progression_index === module_index"
+                        [class.current-progression]="current_module_progression_index === module_index">
                         <mat-expansion-panel-header>
                             <mat-panel-title class="font-size--1">{{ module.title }}</mat-panel-title>
                             <mat-panel-description class="font-size--2">
@@ -72,9 +72,10 @@
                         </mat-expansion-panel-header>
 
                         <mat-selection-list [multiple]="false" *ngIf="module.chapters && module.chapters.length > 0">
-                            <ng-container *ngFor="let chapter of module.chapters; index as chapterIndex">
+                            <ng-container
+                                *ngFor="let chapter of module.chapters; index as chapter_index; trackBy: trackByChapterId">
                                 <mat-list-option
-                                    [class.selected]="current_module_progression_index === moduleIndex && current_chapter_progression_index === chapterIndex ? 'primary' : undefined"
+                                    [class.selected]="current_module_progression_index === module_index && current_chapter_progression_index === chapter_index ? 'primary' : undefined"
                                     *ngIf="chapter"
                                     [value]="chapter"
                                     class="item"
