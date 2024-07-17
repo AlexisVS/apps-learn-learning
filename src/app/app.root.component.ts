@@ -15,10 +15,10 @@ export class AppRootComponent implements OnInit {
 
     public async ngOnInit(): Promise<void> {
         try {
-            this.userInfo = await this.api.get('userinfo');
+            this.userInfo = await this.api.get('/userinfo');
         } catch (err) {
             if (!this.userInfo) {
-                window.location.href = 'http://equal.local/auth';
+                window.location.href = '/auth';
             }
             console.error('Error in appRoot: \n', err);
         }
