@@ -107,6 +107,8 @@ export class LearnService {
      * Check if the user has access to the course edit mode by tree conditions:
      * - The user is in the admins group
      * - The user is in the authors of the course
+     *
+     * @return boolean
      */
     public async userHasAccessToCourseEditMode(): Promise<boolean> {
         let is_course_creator: boolean = false,
@@ -179,7 +181,6 @@ export class LearnService {
      */
     public removeChapter(module_id: number, chapter_id: number): void {
         const module_index: number = this.course.modules.findIndex(module => module.id === module_id);
-        const chapter_index: number = this.course.modules[module_index].chapters.findIndex(chapter => chapter.id === chapter_id);
 
         const updatedChapters: Chapter[] = this.course.modules[module_index].chapters.filter(chapter => chapter.id !== chapter_id);
 
