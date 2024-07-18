@@ -72,7 +72,6 @@ export class LargeComponent implements OnInit, OnChanges {
             changes.course.previousValue !== changes.course.currentValue
         ) {
             this.modules = [...this.course.modules];
-            console.log(this.course.modules.reduce((acc, module) => acc + module.chapters.length, 0));
         }
     }
 

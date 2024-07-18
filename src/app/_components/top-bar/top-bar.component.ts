@@ -64,9 +64,6 @@ export class TopBarComponent implements OnInit, OnChanges {
                 changes.current_page_progression_index.currentValue !== changes.current_page_progression_index.previousValue
             )
         ) {
-            console.log('top bar updated');
-            console.table(this.chapter)
-            console.log(this.module.chapters)
             this.loadStats();
         }
     }
