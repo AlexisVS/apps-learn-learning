@@ -17,13 +17,11 @@ export class TopBarComponent implements OnInit, OnChanges {
     @Input() public userStatement: UserStatement;
     @Input() public course: Course;
     @Input() public module: Module;
+    @Input() public chapter: Chapter;
     @Input() public appInfo: AppInfo;
     @Input() public mode: 'view' | 'edit';
     @Input() public current_chapter_progression_index: number;
     @Input() public current_page_progression_index: number;
-
-    // public currentModule: Module;
-    public currentLesson: Chapter;
 
     /* Used to display the current module progression */
     public current_module_progress: string;
@@ -53,6 +51,10 @@ export class TopBarComponent implements OnInit, OnChanges {
                 !changes.module.isFirstChange() &&
                 changes.module.currentValue !== changes.module.previousValue
             ) || (
+                changes.hasOwnProperty('chapter') &&
+                !changes.chapter.isFirstChange() &&
+                changes.chapter.currentValue !== changes.chapter.previousValue
+            ) || (
                 changes.hasOwnProperty('current_chapter_progression_index') &&
                 !changes.current_chapter_progression_index.isFirstChange() &&
                 changes.current_chapter_progression_index.currentValue !== changes.current_chapter_progression_index.previousValue
@@ -62,6 +64,9 @@ export class TopBarComponent implements OnInit, OnChanges {
                 changes.current_page_progression_index.currentValue !== changes.current_page_progression_index.previousValue
             )
         ) {
+            console.log('top bar updated');
+            console.table(this.chapter)
+            console.log(this.module.chapters)
             this.loadStats();
         }
     }
@@ -71,15 +76,10 @@ export class TopBarComponent implements OnInit, OnChanges {
             this.course.modules && this.course.modules.length > 0 &&
             this.module && this.module.chapters && this.module.chapters.length > 0
         ) {
-            this.currentLesson = this.getCurrentLesson();
             this.computeCurrentModuleProgress();
             this.computeCurrentLessonProgress();
             this.computeProgressTotalStats();
         }
-    }
-
-    public getCurrentLesson(): Chapter {
-        return this.module.chapters[this.current_chapter_progression_index];
     }
 
     public computeCurrentModuleProgress(): void {
@@ -117,13 +117,13 @@ export class TopBarComponent implements OnInit, OnChanges {
 
         const chapter_count: number = this.module.chapters.length;
 
-        if (this.currentLesson === undefined) {
-            this.currentLesson = this.module.chapters[this.current_chapter_progression_index - 1];
+        if (this.chapter === undefined) {
+            this.chapter = this.module.chapters[this.current_chapter_progression_index - 1];
         }
 
-        const page_count: number = this.currentLesson.page_count;
+        const page_count: number = this.chapter.page_count;
 
-        this.current_lesson_progress = `${current_chapter_index} / ${chapter_count} - ${this.computeDuration(this.currentLesson.duration)} - ${page_count + 'p'}`;
+        this.current_lesson_progress = `${current_chapter_index} / ${chapter_count} - ${this.computeDuration(this.chapter.duration)} - ${page_count + 'p'}`;
     }
 
     public computeProgressTotalStats(): void {
@@ -157,7 +157,7 @@ export class TopBarComponent implements OnInit, OnChanges {
             // Get the current module duration
             if (!userStatus?.is_complete) {
                 total_progress_duration += this.module.chapters
-                    .filter(chapter => chapter.order < this.currentLesson.order)
+                    .filter(chapter => chapter.order < this.chapter.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
 
@@ -168,7 +168,7 @@ export class TopBarComponent implements OnInit, OnChanges {
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             } else {
                 active_module_lessons_duration = this.module.chapters
-                    .filter(chapter => chapter.order < this.currentLesson.order)
+                    .filter(chapter => chapter.order < this.chapter.order)
                     .reduce((acc, chapter) => acc + chapter.duration, 0);
             }
         }

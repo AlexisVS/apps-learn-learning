@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Course, Module, UserStatement } from '../_types/learn';
+import { Chapter, Course, Module, UserStatement } from '../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../_types/equal';
 // @ts-ignore
 import { ApiService } from 'sb-shared-lib';
@@ -35,6 +35,7 @@ export class AppComponent implements OnInit {
 
     public course: Course;
     public module: Module;
+    public chapter: Chapter;
     public has_access_to_course: boolean = false;
     public is_loading: boolean = true;
 
@@ -112,6 +113,8 @@ export class AppComponent implements OnInit {
             this.current_chapter_progression_index = this.learnService.currentProgressionIndex.chapter;
             this.current_page_progression_index = this.learnService.currentProgressionIndex.page;
 
+            this.chapter = this.module.chapters[this.current_chapter_progression_index];
+
             this.has_access_to_course = true;
             this.is_loading = false;
         } else {
@@ -126,10 +129,6 @@ export class AppComponent implements OnInit {
             }
 
             try {
-                event.data.hasOwnProperty('data') && event.data.hasOwnProperty('type')
-                    ? console.table({ eventName: event.data.type, ...event.data.data })
-                    : console.table({ eventName: event.data });
-
                 this.handleQursusIframeEvent(event.data);
             } catch (error) {
                 console.error('AppComponent.handleQursusIframeEvent =>', error);
@@ -151,12 +150,13 @@ export class AppComponent implements OnInit {
                     event.data.module_id,
                     event.data.chapter_id,
                 );
-                this.course = {... this.learnService.course };
+                this.course = { ...this.learnService.course };
                 this.module = this.course.modules[this.current_module_progression_index];
                 if (this.current_chapter_progression_index > this.module.chapters.length - 1) {
                     this.current_chapter_progression_index = this.module.chapters.length - 1;
                     this.learnService.currentProgressionIndex.chapter = this.current_chapter_progression_index;
                 }
+                this.chapter = this.module.chapters[this.current_chapter_progression_index];
                 break;
 
             case MessageEventEnum.QU_CHAPTER_ADDED:
@@ -170,6 +170,7 @@ export class AppComponent implements OnInit {
 
                 this.learnService.currentProgressionIndex.chapter = this.module.chapters.length - 1;
                 this.current_chapter_progression_index = this.module.chapters.length - 1;
+                this.chapter = this.module.chapters[this.current_chapter_progression_index];
                 this.learnService.currentProgressionIndex.page = 0;
                 this.current_page_progression_index = 0;
                 break;
@@ -183,17 +184,21 @@ export class AppComponent implements OnInit {
                 break;
 
             case MessageEventEnum.EQ_ACTION_LEARN_NEXT:
-                this.learnService.currentProgressionIndex.chapter = event.data.chapter_index;
+                this.learnService.currentProgressionIndex = {
+                    ...this.learnService.currentProgressionIndex,
+                    chapter: event.data.chapter_index,
+                    page: event.data.page_index,
+                }
+
+                this.current_page_progression_index = event.data.page_index;
                 this.current_chapter_progression_index = event.data.chapter_index;
+
+                this.chapter = this.module.chapters[this.current_chapter_progression_index];
 
                 break;
 
             case MessageEventEnum.QU_CHAPTER_PROGRESSION_FINISHED:
                 let chapter_index: number = event.data.chapter_index;
-
-                if (this.course.modules[this.current_module_progression_index].chapters[chapter_index + 1]) {
-                    ++chapter_index;
-                }
 
                 this.learnService.currentProgressionIndex = {
                     ...this.learnService.currentProgressionIndex,
@@ -202,6 +207,9 @@ export class AppComponent implements OnInit {
                 };
 
                 this.current_chapter_progression_index = chapter_index;
+
+                this.chapter = this.module.chapters[this.current_chapter_progression_index];
+
                 break;
 
             case MessageEventEnum.QU_MODULE_PROGRESSION_FINISHED:
@@ -231,6 +239,7 @@ export class AppComponent implements OnInit {
                     this.openModuleCompletionDialog();
                 }
                 break;
+
         }
     }
 
@@ -267,6 +276,7 @@ export class AppComponent implements OnInit {
                 this.userStatement = this.learnService.getUserStatement();
 
                 this.module = this.course.modules[next_module_index];
+                this.chapter = this.module.chapters[0];
 
                 this.current_module_progression_index = next_module_index;
                 this.current_chapter_progression_index = 0;

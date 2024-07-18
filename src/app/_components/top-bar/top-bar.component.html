@@ -3,11 +3,11 @@
         <img [src]="appInfo.backend_url + appInfo.app_logo_url" alt="" />
     </div>
 
-    <div class="informations" [style.align-items]="!currentLesson || !module ? 'flex-start' : ''">
+    <div class="informations" [style.align-items]="!chapter || !module ? 'flex-start' : ''">
         <div class="course">
             <div class="font-size-3 name">{{ course.title }}</div>
 
-            <div class="breadcrumb" *ngIf="module && currentLesson">
+            <div class="breadcrumb" *ngIf="module && chapter">
 
                 <!-- Module -->
                 <div class="part">
@@ -17,7 +17,7 @@
 
                 <!-- Chapter -->
                 <div class="part">
-                    <span class="font-size-0 label">{{ currentLesson.title }}</span>
+                    <span class="font-size-0 label">{{ chapter.title }}</span>
                     <span *ngIf="mode === 'view'" class="font-size--3 progress">{{ current_lesson_progress }}</span>
                 </div>
             </div>

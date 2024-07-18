@@ -158,7 +158,7 @@ export class LearnService {
                 if (index !== module_index) {
                     return module;
                 }
-                const updatedChapters: Chapter[] = [...module.chapters, chapter];
+                const updatedChapters: Chapter[] = [...module.chapters, chapter].sort((a, b) => a.order + b.order);
 
                 return { ...module, chapters: updatedChapters };
             });
