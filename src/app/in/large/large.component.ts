@@ -7,7 +7,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
-import { Course, Module, UserStatement, UserStatus } from '../../_types/learn';
+import { Chapter, Course, Module, UserStatement, UserStatus } from '../../_types/learn';
 import { AppInfo, EnvironmentInfo } from '../../_types/equal';
 
 type DrawerState = 'inactive' | 'active' | 'pinned';
@@ -26,6 +26,7 @@ export class LargeComponent implements OnInit, OnChanges {
     @Input() public appInfo: AppInfo;
     @Input() public course: Course;
     @Input() public module: Module;
+    @Input() public chapter: Chapter;
     @Input() public has_access_to_course: boolean;
     @Input() public is_loading: boolean;
     @Input() public mode: 'view' | 'edit';
@@ -71,7 +72,6 @@ export class LargeComponent implements OnInit, OnChanges {
             changes.course.previousValue !== changes.course.currentValue
         ) {
             this.modules = [...this.course.modules];
-            console.log(this.course.modules.reduce((acc, module) => acc + module.chapters.length, 0));
         }
     }
 
